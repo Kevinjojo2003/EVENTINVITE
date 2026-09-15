@@ -1,0 +1,121 @@
+@import "tailwindcss";
+
+/* ---------- dashboard ground ---------- */
+:root {
+  --paper: #f7f6f2;
+  --paper-2: #efede6;
+  --ink: #1b1a17;
+  --ink-2: #5f5b52;
+  --line: #dcd8cd;
+  --brand: #0e2521;
+  --brand-2: #d9be82;
+}
+html { color-scheme: light; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Jost", "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- invitation template ---------- */
+/* The invite sets --inv-* on its own root from the couple's config, so it never
+   inherits dashboard colours. */
+.inv {
+  background: var(--inv-bg);
+  color: var(--inv-ink);
+  font-family: var(--inv-body);
+  font-weight: 300;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+.inv ::selection { background: var(--inv-accent); color: var(--inv-bg-deep); }
+.inv .display { font-family: var(--inv-display); }
+.inv .eyebrow {
+  font-family: var(--inv-body);
+  font-weight: 400;
+  font-size: 0.7rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--inv-accent);
+}
+.inv .dim { color: var(--inv-ink-dim); }
+.inv .accent { color: var(--inv-accent); }
+.inv .hairline { border-color: color-mix(in srgb, var(--inv-accent) 30%, transparent); }
+.inv .tnum { font-variant-numeric: tabular-nums; }
+.inv input, .inv textarea {
+  background: transparent;
+  color: var(--inv-ink);
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--inv-accent) 35%, transparent);
+  padding: 0.6rem 0;
+  width: 100%;
+  font: inherit;
+  font-size: 1rem;
+  outline: none;
+}
+.inv input::placeholder, .inv textarea::placeholder { color: color-mix(in srgb, var(--inv-ink-dim) 70%, transparent); }
+.inv input:focus, .inv textarea:focus { border-bottom-color: var(--inv-accent); }
+.inv .btn {
+  display: inline-flex; align-items: center; gap: 0.75rem;
+  padding: 0.9rem 2rem;
+  font-size: 0.72rem; letter-spacing: 0.28em; text-transform: uppercase; font-weight: 500;
+  background: var(--inv-accent); color: var(--inv-bg-deep);
+  border: 1px solid var(--inv-accent);
+  cursor: pointer;
+}
+.inv .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.inv .btn-ghost { background: transparent; color: var(--inv-accent); }
+.inv .btn-ghost:hover { background: var(--inv-accent); color: var(--inv-bg-deep); }
+.inv .chip {
+  height: 2.5rem; min-width: 2.5rem; padding: 0 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--inv-accent) 35%, transparent);
+  background: transparent; color: var(--inv-ink); font: inherit; cursor: pointer;
+}
+.inv .chip[aria-pressed="true"] { background: var(--inv-accent); color: var(--inv-bg-deep); border-color: var(--inv-accent); }
+
+@keyframes inv-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes inv-flap { from { transform: rotateX(0deg); } to { transform: rotateX(-175deg); } }
+@keyframes inv-fade { to { opacity: 0; visibility: hidden; } }
+@keyframes inv-bars { 0%, 100% { transform: scaleY(0.3); } 50% { transform: scaleY(1); } }
+.inv .rise { animation: inv-rise 900ms cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.inv .rise-2 { animation-delay: 180ms; }
+.inv .rise-3 { animation-delay: 360ms; }
+.inv .rise-4 { animation-delay: 540ms; }
+.inv .rise-5 { animation-delay: 720ms; }
+.inv .envelope { perspective: 1400px; }
+.inv .envelope-flap { transform-origin: top center; transform-style: preserve-3d; backface-visibility: hidden; }
+.inv .envelope.opening .envelope-flap { animation: inv-flap 1100ms cubic-bezier(0.6, 0, 0.3, 1) forwards; }
+.inv .envelope.opening .seal { opacity: 0; transition: opacity 300ms ease 200ms; }
+.inv .gate.leaving { animation: inv-fade 900ms ease 700ms forwards; }
+.inv .bar { transform-origin: bottom; animation: inv-bars 900ms ease-in-out infinite; }
+.inv .bar:nth-child(2) { animation-delay: 150ms; }
+.inv .bar:nth-child(3) { animation-delay: 300ms; }
+.inv .bar.paused { animation-play-state: paused; transform: scaleY(0.3); }
+@media (prefers-reduced-motion: reduce) {
+  .inv .rise, .inv .envelope.opening .envelope-flap, .inv .gate.leaving, .inv .bar { animation-duration: 1ms !important; animation-delay: 0ms !important; }
+}
+
+/* ---------- dashboard bits ---------- */
+.field { display: grid; gap: 0.35rem; }
+.field > label, .field > .label { font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); font-weight: 500; }
+.field input, .field textarea, .field select {
+  border: 1px solid var(--line); background: #fff; color: var(--ink);
+  padding: 0.55rem 0.7rem; font: inherit; font-size: 0.95rem; border-radius: 4px; width: 100%;
+}
+.field input:focus, .field textarea:focus, .field select:focus { outline: 2px solid var(--brand-2); outline-offset: 1px; border-color: var(--brand-2); }
+.field input[type="color"] { padding: 0.15rem; height: 2.4rem; width: 3.2rem; }
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  background: var(--brand); color: #fff; padding: 0.6rem 1.1rem; border-radius: 4px;
+  font-size: 0.9rem; font-weight: 500; border: 1px solid var(--brand); cursor: pointer;
+}
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-secondary {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  background: #fff; color: var(--ink); padding: 0.6rem 1.1rem; border-radius: 4px;
+  font-size: 0.9rem; font-weight: 500; border: 1px solid var(--line); cursor: pointer;
+}
+.btn-secondary:hover { border-color: var(--ink-2); }
+.card { background: #fff; border: 1px solid var(--line); border-radius: 6px; }
