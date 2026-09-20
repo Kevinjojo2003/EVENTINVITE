@@ -1,16 +1,28 @@
 "use client";
-import { useMemo, useState, useTransition } from "react";
+import { Suspense, useEffect, useMemo, useState, useTransition } from "react";
+import { useSearchParams } from "next/navigation";
 import { createInvite } from "../actions";
 import { EVENT_TYPES, type EventType } from "@/lib/types";
 import { LANGUAGES } from "@/lib/i18n";
 import { TIMEZONES, traditionsFor } from "@/lib/traditions";
 import { slugify } from "@/lib/format";
+import { templateByKey } from "@/lib/templates";
 
-export default function NewInvite() {
-  const [type, setType] = useState<EventType>("wedding");
-  const [tradition, setTradition] = useState("");
-  const [languageCode, setLanguageCode] = useState("en");
-  const [timezone, setTimezone] = useState("Asia/Kolkata");
+export default function NewInvitePage() {
+  return (
+    <Suspense>
+      <NewInvite />
+    </Suspense>
+  );
+}
+
+function NewInvite() {
+  // Arriving from a template page (?template=key) starts from that template's design.
+  const template = templateByKey(useSearchParams().get("template") ?? "");
+  const [type, setType] = useState<EventType>(template?.type ?? "wedding");
+  const [tradition, setTradition] = useState(template?.tradition ?? "");
+  const [languageCode, setLanguageCode] = useState(template?.language ?? "en");
+  const [timezone, setTimezone] = useState(template?.timezone ?? "Asia/Kolkata");
   const [name1, setName1] = useState("");
   const [name2, setName2] = useState("");
   const [slug, setSlug] = useState("");
@@ -32,7 +44,7 @@ export default function NewInvite() {
     e.preventDefault();
     setError("");
     start(async () => {
-      const r = await createInvite({ type, name1, name2: two ? name2 : "", slug: finalSlug, tradition: tradition || traditions[0]?.key, language: languageCode, timezone });
+      const r = await createInvite({ type, name1, name2: two ? name2 : "", slug: finalSlug, tradition: tradition || traditions[0]?.key, language: languageCode, timezone, template: template?.key });
       if (r?.error) setError(r.error);
     });
   }
@@ -43,6 +55,14 @@ export default function NewInvite() {
   return (
     <main className="mx-auto w-full max-w-2xl px-5 py-10 sm:px-8">
       <h1 className="text-2xl font-medium">New event</h1>
+      {template && (
+        <p className="mt-3 rounded border px-4 py-3 text-sm" style={{ borderColor: "var(--line-2)", background: "var(--surface)" }}>
+          Starting from <strong>{template.name}</strong> ({template.caption}). Its colours, crest and wording come along; you add the names and details.{" "}
+          <a href="/templates" className="underline underline-offset-4">
+            Pick another
+          </a>
+        </p>
+      )}
       <form onSubmit={submit} className="mt-8 grid gap-8">
         <fieldset className="grid gap-3">
           <legend className="text-xs font-medium uppercase tracking-[0.08em]" style={{ color: "var(--ink-2)" }}>

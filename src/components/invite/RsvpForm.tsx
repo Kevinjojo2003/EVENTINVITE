@@ -1,6 +1,6 @@
 "use client";
-import { useState } from "react";
-import type { InviteConfig } from "@/lib/types";
+import { useRef, useState } from "react";
+import type { EventReply, InviteConfig, ScheduleItem } from "@/lib/types";
 import { displayTitle } from "@/lib/themes";
 import { language, fill } from "@/lib/i18n";
 import { dayLabel, longDate, weekday } from "@/lib/format";
@@ -11,35 +11,78 @@ type Props = {
   slug: string;
   guestToken?: string;
   guestName?: string;
+  events?: ScheduleItem[]; // the ceremonies this guest is invited to (defaults to all)
   preview?: boolean; // in the dashboard preview nothing is submitted
 };
 
-export function RsvpForm({ config, slug, guestToken, guestName, preview }: Props) {
-  const { rsvp, schedule } = config;
+// Headcount wording. Falls back to English for languages without a set.
+const COUNT_WORDS: Record<string, { adults: string; children: string; infants: string; yes: string; no: string }> = {
+  en: { adults: "Adults", children: "Children", infants: "Infants", yes: "Coming", no: "Not coming" },
+  ml: { adults: "മുതിർന്നവർ", children: "കുട്ടികൾ", infants: "ശിശുക്കൾ", yes: "വരും", no: "വരില്ല" },
+  hi: { adults: "वयस्क", children: "बच्चे", infants: "शिशु", yes: "आएंगे", no: "नहीं आएंगे" },
+  ta: { adults: "பெரியவர்கள்", children: "குழந்தைகள்", infants: "கைக்குழந்தைகள்", yes: "வருவோம்", no: "வர இயலாது" },
+  ar: { adults: "البالغون", children: "الأطفال", infants: "الرضع", yes: "سأحضر", no: "لن أحضر" },
+  es: { adults: "Adultos", children: "Niños", infants: "Bebés", yes: "Asistiré", no: "No asistiré" },
+  fr: { adults: "Adultes", children: "Enfants", infants: "Bébés", yes: "Présent", no: "Absent" },
+};
+
+function Stepper({ label, value, min, max, onChange }: { label: string; value: number; min: number; max: number; onChange: (n: number) => void }) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <span className="text-sm">{label}</span>
+      <span className="flex items-center gap-1">
+        <button type="button" className="chip" aria-label={`${label} minus`} disabled={value <= min} onClick={() => onChange(value - 1)} style={{ minWidth: "2.5rem", opacity: value <= min ? 0.4 : 1 }}>
+          -
+        </button>
+        <span className="tnum w-8 text-center" aria-live="polite">
+          {value}
+        </span>
+        <button type="button" className="chip" aria-label={`${label} plus`} disabled={value >= max} onClick={() => onChange(value + 1)} style={{ minWidth: "2.5rem", opacity: value >= max ? 0.4 : 1 }}>
+          +
+        </button>
+      </span>
+    </div>
+  );
+}
+
+export function RsvpForm({ config, slug, guestToken, guestName, events, preview }: Props) {
+  const { rsvp } = config;
+  const schedule = events && events.length ? events : config.schedule;
   const L = config.labels;
   const tz = config.event.timezone;
   const loc = language(config.event.language).locale;
   const [name, setName] = useState(guestName ?? "");
   const [email, setEmail] = useState("");
   const [company, setCompany] = useState("");
-  const [count, setCount] = useState(rsvp.maxParty > 1 ? "2" : "1");
+  const W = COUNT_WORDS[config.event.language] ?? COUNT_WORDS.en;
+  const startAdults = rsvp.maxParty > 1 ? 2 : 1;
+  const cap = Math.max(1, Math.min(20, rsvp.maxParty));
+  const [replies, setReplies] = useState<Record<string, EventReply>>(() =>
+    Object.fromEntries(schedule.map((e) => [e.key, { attending: true, adults: startAdults, children: 0, infants: 0 }])),
+  );
+  const setReply = (key: string, patch: Partial<EventReply>) => setReplies((r) => ({ ...r, [key]: { ...r[key], ...patch } }));
+  const multi = schedule.length > 1;
+  const going = schedule.filter((e) => replies[e.key]?.attending);
   const [attending, setAttending] = useState<"yes" | "no">("yes");
-  const [picked, setPicked] = useState<Record<string, boolean>>(Object.fromEntries(schedule.map((e) => [e.key, true])));
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const startedAt = useRef(Date.now()); // when the form appeared, so an instant submission can be recognised as a bot
+  const [website, setWebsite] = useState(""); // hidden field: only bots fill it in
+  const [deleted, setDeleted] = useState<"idle" | "busy" | "done">("idle");
   const [done, setDone] = useState<null | { ticketCode: string; ticketUrl: string; attending: boolean }>(null);
 
-  const ready = name.trim().length > 1 && (!rsvp.askCompany || attending === "no" || company.trim().length > 0);
-  const chosen = schedule.filter((e) => picked[e.key]).map((e) => e.title);
-  const counts = Array.from({ length: Math.max(1, Math.min(20, rsvp.maxParty)) }, (_, i) => String(i + 1));
+  const ready = name.trim().length > 1 && (!rsvp.askCompany || attending === "no" || company.trim().length > 0) && (attending === "no" || going.length > 0);
+  const partyOf = (r: EventReply) => r.adults + r.children;
+  const peopleLine = (r: EventReply) =>
+    [`${r.adults} ${W.adults.toLowerCase()}`, r.children ? `${r.children} ${W.children.toLowerCase()}` : "", r.infants ? `${r.infants} ${W.infants.toLowerCase()}` : ""].filter(Boolean).join(", ");
   const title = displayTitle(config);
 
   const text = [
     `${L.rsvp}: ${title}`,
     `${L.yourName}: ${name.trim()}`,
-    attending === "yes" ? `${L.accept} (${count})` : L.decline,
-    attending === "yes" && chosen.length && schedule.length > 1 ? `${L.whichDays}: ${chosen.join(", ")}` : "",
+    attending === "yes" ? L.accept : L.decline,
+    ...(attending === "yes" ? schedule.map((e) => (replies[e.key]?.attending ? `${multi ? e.title + ": " : ""}${peopleLine(replies[e.key])}` : multi ? `${e.title}: ${W.no}` : "")) : []),
     company.trim() ? `${L.company}: ${company.trim()}` : "",
     note.trim() ? `${L.anythingElse}: ${note.trim()}` : "",
   ]
@@ -70,9 +113,12 @@ export function RsvpForm({ config, slug, guestToken, guestName, preview }: Props
           email: email.trim() || null,
           company: company.trim() || null,
           attending: attending === "yes",
-          partySize: attending === "yes" ? Number(count) : 0,
-          events: attending === "yes" ? schedule.filter((s) => picked[s.key]).map((s) => s.key) : [],
+          partySize: attending === "yes" ? Math.max(...going.map((e) => partyOf(replies[e.key])), 1) : 0,
+          events: attending === "yes" ? going.map((e) => e.key) : [],
+          responses: Object.fromEntries(schedule.map((e) => [e.key, attending === "yes" ? replies[e.key] : { attending: false, adults: 0, children: 0, infants: 0 }])),
           note: note.trim() || null,
+          website,
+          startedAt: startedAt.current,
         }),
       });
       const data = await res.json();
@@ -89,7 +135,26 @@ export function RsvpForm({ config, slug, guestToken, guestName, preview }: Props
     const main = schedule[0];
     return (
       <div className="grid gap-6">
-        <p className="display text-2xl italic">{done.attending ? L.thanksYes : L.thanksNo}</p>
+        <p className="display text-2xl italic">{deleted === "done" ? L.replyDeleted : done.attending ? L.thanksYes : L.thanksNo}</p>
+        {!preview && deleted !== "done" && (
+          <button
+            type="button"
+            className="dim w-fit text-sm underline underline-offset-4"
+            disabled={deleted === "busy"}
+            onClick={async () => {
+              if (!window.confirm(L.deleteConfirm)) return;
+              setDeleted("busy");
+              try {
+                const res = await fetch("/api/rsvp", { method: "DELETE", headers: { "content-type": "application/json" }, body: JSON.stringify({ slug, code: done.ticketCode }) });
+                setDeleted(res.ok ? "done" : "idle");
+              } catch {
+                setDeleted("idle");
+              }
+            }}
+          >
+            {deleted === "busy" ? L.deleting : L.deleteReply}
+          </button>
+        )}
         {done.attending && rsvp.tickets && (
           <Ticket
             code={done.ticketCode}
@@ -107,6 +172,12 @@ export function RsvpForm({ config, slug, guestToken, guestName, preview }: Props
 
   return (
     <form className="grid gap-7" onSubmit={submit}>
+      <div aria-hidden="true" style={{ position: "absolute", left: "-9999px", width: 1, height: 1, overflow: "hidden" }}>
+        <label>
+          Leave this field empty
+          <input tabIndex={-1} autoComplete="off" name="website" value={website} onChange={(e) => setWebsite(e.target.value)} />
+        </label>
+      </div>
       <div className="grid gap-2">
         <label htmlFor="rsvp-name" className="eyebrow">
           {L.yourName}
@@ -143,39 +214,44 @@ export function RsvpForm({ config, slug, guestToken, guestName, preview }: Props
         </div>
       )}
 
-      {attending === "yes" && rsvp.maxParty > 1 && (
-        <div className="grid gap-2">
-          <span className="eyebrow">{L.howMany}</span>
-          <div className="flex flex-wrap gap-2">
-            {counts.map((n) => (
-              <button key={n} type="button" className="chip tnum" aria-pressed={count === n} onClick={() => setCount(n)}>
-                {n}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {attending === "yes" && schedule.length > 1 && (
-        <div className="grid gap-3">
-          <span className="eyebrow">{L.whichDays}</span>
-          <div className="grid gap-3 sm:grid-cols-3">
-            {schedule.map((e) => (
-              <label key={e.key} className="flex cursor-pointer items-start gap-3">
-                <input
-                  type="checkbox"
-                  className="mt-1.5 h-4 shrink-0"
-                  style={{ accentColor: "var(--inv-accent)", width: "1rem" }}
-                  checked={!!picked[e.key]}
-                  onChange={(ev) => setPicked((p) => ({ ...p, [e.key]: ev.target.checked }))}
-                />
-                <span className="leading-snug">
-                  <span className="block">{e.title}</span>
-                  <span className="dim block text-xs">{weekday(e.start, tz, loc)}</span>
-                </span>
-              </label>
-            ))}
-          </div>
+      {attending === "yes" && (
+        <div className="grid gap-6">
+          {schedule.map((e) => {
+            const r = replies[e.key];
+            if (!r) return null;
+            return (
+              <div key={e.key} className="hairline grid gap-4 border-t pt-5 first:border-t-0 first:pt-0">
+                {multi && (
+                  <div className="flex flex-wrap items-baseline justify-between gap-3">
+                    <p className="leading-snug">
+                      <span className="display block text-xl">{e.title}</span>
+                      <span className="dim block text-xs">{weekday(e.start, tz, loc)}</span>
+                    </p>
+                    <span className="flex gap-2">
+                      <button type="button" className="chip" aria-pressed={r.attending} onClick={() => setReply(e.key, { attending: true })}>
+                        {W.yes}
+                      </button>
+                      <button type="button" className="chip" aria-pressed={!r.attending} onClick={() => setReply(e.key, { attending: false })}>
+                        {W.no}
+                      </button>
+                    </span>
+                  </div>
+                )}
+                {r.attending && cap > 1 && (
+                  <div className="grid gap-3">
+                    {!multi && <span className="eyebrow">{L.howMany}</span>}
+                    <Stepper label={rsvp.askChildren ? W.adults : L.howMany} value={r.adults} min={1} max={cap} onChange={(n) => setReply(e.key, { adults: n })} />
+                    {rsvp.askChildren && (
+                      <>
+                        <Stepper label={W.children} value={r.children} min={0} max={cap} onChange={(n) => setReply(e.key, { children: n })} />
+                        <Stepper label={W.infants} value={r.infants} min={0} max={cap} onChange={(n) => setReply(e.key, { infants: n })} />
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
 

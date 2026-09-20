@@ -23,6 +23,7 @@ export default async function GuestsPage({ params }: { params: Promise<{ id: str
       guests={(guests ?? []) as Guest[]}
       replied={Object.fromEntries(replied)}
       headline={c.event.headline}
+      schedule={c.schedule.map((e) => ({ key: e.key, title: e.title }))}
     />
   );
 }

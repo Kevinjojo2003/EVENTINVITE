@@ -190,7 +190,7 @@ function loadYouTubeApi(): Promise<YTNs> {
   });
 }
 
-function createYouTube(videoId: string): MusicControl {
+function createYouTube(videoId: string, startAt = 0, onFail?: () => void): MusicControl {
   let player: YTPlayer | null = null;
   let playing = false;
   let wantPlay = false;
@@ -203,12 +203,14 @@ function createYouTube(videoId: string): MusicControl {
   void loadYouTubeApi().then((YT) => {
     player = new YT.Player(inner, {
       videoId,
-      playerVars: { autoplay: 0, controls: 0, loop: 1, playlist: videoId, playsinline: 1, rel: 0 },
+      playerVars: { autoplay: 0, controls: 0, loop: 1, playlist: videoId, playsinline: 1, rel: 0, start: Math.max(0, Math.floor(startAt)), origin: window.location.origin },
       events: {
         onReady: () => {
           player?.setVolume(70);
           if (wantPlay) player?.playVideo();
         },
+        // Embedding switched off by the video's owner, removed, or private: play the built-in score instead of silence.
+        onError: () => onFail?.(),
       },
     });
   });
@@ -232,6 +234,36 @@ function createYouTube(videoId: string): MusicControl {
   };
 }
 
+// A YouTube player that hands over to the built-in score if the video cannot be played.
+function withFallback(videoId: string, startAt: number): MusicControl {
+  let active: MusicControl;
+  let fallback: MusicControl | null = null;
+  let wantPlay = false;
+  const yt = createYouTube(videoId, startAt, () => {
+    if (fallback) return;
+    yt.destroy();
+    fallback = createSynth();
+    active = fallback;
+    if (wantPlay) fallback.play();
+  });
+  active = yt;
+  return {
+    play() {
+      wantPlay = true;
+      active.play();
+    },
+    pause() {
+      wantPlay = false;
+      active.pause();
+    },
+    playing: () => active.playing(),
+    destroy() {
+      yt.destroy();
+      fallback?.destroy();
+    },
+  };
+}
+
 const silent: MusicControl = { play() {}, pause() {}, playing: () => false, destroy() {} };
 
 export function createMusic(m: InviteConfig["music"]): MusicControl {
@@ -242,7 +274,7 @@ export function createMusic(m: InviteConfig["music"]): MusicControl {
     case "upload":
       return m.url ? createFile(m.url) : silent;
     case "youtube":
-      return m.youtubeId ? createYouTube(m.youtubeId) : silent;
+      return m.youtubeId ? withFallback(m.youtubeId, m.youtubeStart || 0) : silent;
     default:
       return silent;
   }

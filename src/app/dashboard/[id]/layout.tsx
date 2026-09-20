@@ -11,7 +11,8 @@ export default async function InviteLayout({ children, params }: { children: Rea
     { href: `/dashboard/${id}`, label: "Edit" },
     { href: `/dashboard/${id}/guests`, label: "Guests" },
     { href: `/dashboard/${id}/rsvps`, label: "RSVPs" },
-    { href: `/dashboard/${id}/checkin`, label: "Check-in" },
+    // QR tickets and door check-in exist for corporate events only.
+    ...(inv.event_type === "corporate" ? [{ href: `/dashboard/${id}/checkin`, label: "Check-in" }] : []),
   ];
   return (
     <div>

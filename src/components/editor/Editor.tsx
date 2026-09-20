@@ -2,15 +2,39 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Invite, InviteConfig, ScheduleItem, FontPair, MusicSource } from "@/lib/types";
 import { EVENT_TYPES } from "@/lib/types";
-import { PRESETS, FONT_PAIRS, normalizeConfig } from "@/lib/themes";
+import { BACKGROUNDS, PRESETS, FONT_PAIRS, normalizeConfig } from "@/lib/themes";
 import { LANGUAGES, labelsFor, type Labels } from "@/lib/i18n";
 import { TIMEZONES, traditionsFor } from "@/lib/traditions";
 import { fromLocalInput, inviteUrl, slugify, toLocalInput } from "@/lib/format";
 import { parseYouTubeId } from "@/components/invite/music";
 import { saveConfig, setPublished, updateSlug } from "@/app/dashboard/actions";
 import { listLibrary, uploadFile, type LibraryTrack } from "./upload";
+import { Motif, ORNAMENTS } from "@/components/invite/Ornaments";
+import { SCENE_LIST } from "@/lib/scenes";
+import { PHOTO_LIST } from "@/lib/photos";
+import { WASHES } from "@/components/invite/Watercolor";
+import { ICONS } from "@/components/icons/registry";
+import { Icon as LibIcon } from "@/components/icons/Icon";
 
-type Tab = "basics" | "schedule" | "venue" | "design" | "photos" | "music" | "rsvp" | "wording";
+// Ceremony types offered when adding an event, with a line on what each is.
+const CEREMONIES: { key: string; title: string; desc: string; kids?: "welcome" | "adults" }[] = [
+  { key: "wedding", title: "Wedding ceremony", desc: "The main ceremony", kids: "welcome" },
+  { key: "reception", title: "Reception", desc: "Meal, toasts and dancing after", kids: "welcome" },
+  { key: "engagement", title: "Engagement", desc: "The ring, the families, one evening", kids: "welcome" },
+  { key: "nikah", title: "Nikah", desc: "The religious ceremony", kids: "welcome" },
+  { key: "walima", title: "Walima", desc: "Reception and feast", kids: "welcome" },
+  { key: "mehendi", title: "Mehendi", desc: "Night before, often ladies-only" },
+  { key: "haldi", title: "Haldi", desc: "Morning of, turmeric and family" },
+  { key: "sangeet", title: "Sangeet", desc: "Music and dance evening", kids: "welcome" },
+  { key: "muhurtham", title: "Muhurtham", desc: "The auspicious moment of the ritual", kids: "welcome" },
+  { key: "sadya", title: "Sadya", desc: "The feast on banana leaf", kids: "welcome" },
+  { key: "rehearsal", title: "Rehearsal dinner", desc: "Night before, close family", kids: "adults" },
+  { key: "farewell", title: "Send-off", desc: "The bride's farewell, family", kids: "welcome" },
+  { key: "other", title: "New event", desc: "Any other event, named by you" },
+];
+const ALL_FONTS_HREF = `https://fonts.googleapis.com/css2?${Object.values(FONT_PAIRS).map((f) => f.google).join("&")}&display=swap`;
+
+type Tab = "basics" | "schedule" | "venue" | "design" | "photos" | "music" | "rsvp" | "extras" | "wording";
 const TABS: { key: Tab; label: string }[] = [
   { key: "basics", label: "Basics" },
   { key: "schedule", label: "Schedule" },
@@ -19,6 +43,7 @@ const TABS: { key: Tab; label: string }[] = [
   { key: "photos", label: "Photos" },
   { key: "music", label: "Music" },
   { key: "rsvp", label: "RSVP" },
+  { key: "extras", label: "Extras" },
   { key: "wording", label: "Wording" },
 ];
 
@@ -76,6 +101,21 @@ const LABEL_NAMES: Partial<Record<keyof Labels, string>> = {
   showAtDoor: "Ticket: show at the door",
   checkedIn: "Ticket: checked in",
   backToInvite: "Ticket: back link",
+  stay: "Where to stay: heading",
+  stayHeading: "Where to stay: title",
+  travel: "Travel: heading",
+  travelHeading: "Travel: title",
+  faq: "Q & A: heading",
+  faqHeading: "Q & A: title",
+  party: "Wedding party: heading",
+  partyHeading: "Wedding party: title",
+  viewHotel: "Hotel link text",
+  lostCall: "Contacts heading",
+  payUpi: "UPI button",
+  deleteReply: "Guest: delete my reply",
+  replyDeleted: "Guest: reply deleted",
+  deleting: "Guest: deleting",
+  deleteConfirm: "Guest: delete confirmation",
 };
 
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
@@ -161,7 +201,16 @@ export function Editor({ invite }: { invite: Invite }) {
     setStatus(r?.error ? "error" : "saved");
   }
 
+  // What must be filled in before the invitation can go live.
+  const checklist: [string, boolean][] = [
+    ["Add the name or names", config.hosts.name1.trim().length > 0],
+    ["Add at least one ceremony with a start time", config.schedule.some((e) => !!e.start)],
+    ["Add the venue", config.venue.name.trim().length > 0 || config.schedule.some((e) => e.place.trim().length > 0)],
+  ];
+  const missing = checklist.filter(([, ok]) => !ok);
+
   async function togglePublish() {
+    if (!published && missing.length) return;
     setBusy("publish");
     await saveNow();
     const r = await setPublished(invite.id, !published);
@@ -195,7 +244,7 @@ export function Editor({ invite }: { invite: Invite }) {
     setBusy("photos");
     try {
       const urls: string[] = [];
-      for (const f of Array.from(files).slice(0, 20)) urls.push(await uploadFile("photos", invite.id, f));
+      for (const f of Array.from(files).slice(0, 60)) urls.push(await uploadFile("photos", invite.id, f));
       patch((c) => ({ ...c, photos: [...c.photos, ...urls.map((u) => ({ url: u }))] }));
     } catch (e) {
       alert(e instanceof Error ? e.message : "Upload failed");
@@ -260,7 +309,7 @@ export function Editor({ invite }: { invite: Invite }) {
               <button type="button" className="btn-secondary" onClick={saveNow} disabled={status === "saving"}>
                 Save
               </button>
-              <button type="button" className="btn-primary" onClick={togglePublish} disabled={busy === "publish"}>
+              <button type="button" className="btn-primary" onClick={togglePublish} disabled={busy === "publish" || (!published && missing.length > 0)} title={!published && missing.length ? "Finish the checklist below first" : undefined}>
                 {published ? "Unpublish" : "Publish"}
               </button>
             </div>
@@ -276,6 +325,18 @@ export function Editor({ invite }: { invite: Invite }) {
               Copy
             </button>
           </div>
+          {!published && missing.length > 0 && (
+            <div className="mt-3 rounded border px-3 py-2 text-sm" style={{ borderColor: "var(--line-2)", background: "var(--surface)" }}>
+              <p className="font-medium">Before you can publish:</p>
+              <ul className="mt-1 grid gap-0.5">
+                {checklist.map(([label, ok]) => (
+                  <li key={label} style={{ color: ok ? "var(--ok)" : "var(--ink-2)" }}>
+                    {ok ? "✓" : "○"} {label}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           <nav className="mt-3 flex gap-1 overflow-x-auto">
             {TABS.map((t) => (
               <button
@@ -434,21 +495,148 @@ export function Editor({ invite }: { invite: Invite }) {
                   <Field label="Place">
                     <input value={e.place} onChange={(ev) => setSchedule(i, "place", ev.target.value)} />
                   </Field>
+                  <Field label="Icon" hint="Shown above the ceremony's name. Automatic picks one from the title. Religious and cultural icons are optional: choose them only if they fit.">
+                    <div className="flex items-center gap-3">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-full border" style={{ borderColor: "var(--line-2)" }}>
+                        {e.icon ? <LibIcon name={e.icon} size={20} /> : <span className="text-xs">Auto</span>}
+                      </span>
+                      <select value={e.icon ?? ""} onChange={(ev) => patch((c) => ({ ...c, schedule: c.schedule.map((s2, j) => (j === i ? { ...s2, icon: ev.target.value || undefined } : s2)) }))}>
+                        <option value="">Automatic</option>
+                        {(["wedding", "ceremony", "party", "baby", "corporate", "event"] as const).map((cat) => (
+                          <optgroup key={cat} label={cat[0].toUpperCase() + cat.slice(1)}>
+                            {Object.entries(ICONS)
+                              .filter(([, d]) => d.category === cat)
+                              .map(([name, d]) => (
+                                <option key={name} value={name}>
+                                  {d.label}
+                                </option>
+                              ))}
+                          </optgroup>
+                        ))}
+                      </select>
+                    </div>
+                  </Field>
                   <Field label="Dress code">
                     <input value={e.dress} onChange={(ev) => setSchedule(i, "dress", ev.target.value)} />
+                  </Field>
+                  <Field label="Dress colours" hint="Optional swatches, as hex codes separated by commas: #c8952a, #7b2333">
+                    <input
+                      defaultValue={(e.dressColors ?? []).join(", ")}
+                      onChange={(ev) => {
+                        const list = ev.target.value.split(/[\s,]+/).filter((h) => /^#[0-9a-fA-F]{6}$/.test(h)).slice(0, 8);
+                        patch((c) => ({ ...c, schedule: c.schedule.map((s, j) => (j === i ? { ...s, dressColors: list } : s)) }));
+                      }}
+                      placeholder="#c8952a, #7b2333"
+                    />
+                  </Field>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Field label="Children">
+                      <select value={e.kids ?? ""} onChange={(ev) => patch((c) => ({ ...c, schedule: c.schedule.map((s, j) => (j === i ? { ...s, kids: (ev.target.value || undefined) as ScheduleItem["kids"] } : s)) }))}>
+                        <option value="">Do not mention</option>
+                        <option value="welcome">Children are welcome</option>
+                        <option value="adults">Adults only</option>
+                      </select>
+                    </Field>
+                    <Field label="Officiant" hint="Optional">
+                      <input value={e.officiant ?? ""} onChange={(ev) => patch((c) => ({ ...c, schedule: c.schedule.map((s, j) => (j === i ? { ...s, officiant: ev.target.value } : s)) }))} />
+                    </Field>
+                  </div>
+                  <label className="flex items-center gap-2 text-sm">
+                    <input type="checkbox" checked={!!e.dry} onChange={(ev) => patch((c) => ({ ...c, schedule: c.schedule.map((s, j) => (j === i ? { ...s, dry: ev.target.checked } : s)) }))} />
+                    No alcohol at this event
+                  </label>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Field label="Venue contact name">
+                      <input value={e.contactName ?? ""} onChange={(ev) => patch((c) => ({ ...c, schedule: c.schedule.map((s, j) => (j === i ? { ...s, contactName: ev.target.value } : s)) }))} />
+                    </Field>
+                    <Field label="Venue contact phone">
+                      <input value={e.contactPhone ?? ""} onChange={(ev) => patch((c) => ({ ...c, schedule: c.schedule.map((s, j) => (j === i ? { ...s, contactPhone: ev.target.value } : s)) }))} placeholder="+91 98765 43210" />
+                    </Field>
+                  </div>
+                  <Field label="Photos of this ceremony or venue" hint="Up to three">
+                    <div className="flex flex-wrap items-center gap-2">
+                      {(e.photos ?? []).map((u) => (
+                        <span key={u} className="relative">
+                          <img src={u} alt="" className="h-16 w-16 rounded object-cover" />
+                          <button
+                            type="button"
+                            aria-label="Remove photo"
+                            className="absolute -right-1 -top-1 h-5 w-5 rounded-full bg-black text-xs text-white"
+                            onClick={() => patch((c) => ({ ...c, schedule: c.schedule.map((s2, j) => (j === i ? { ...s2, photos: (s2.photos ?? []).filter((x) => x !== u) } : s2)) }))}
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                      {(e.photos ?? []).length < 3 && (
+                        <input
+                          type="file"
+                          accept="image/*"
+                          disabled={busy === `ev${i}`}
+                          onChange={async (ev) => {
+                            const f = ev.target.files?.[0];
+                            ev.target.value = "";
+                            if (!f) return;
+                            setBusy(`ev${i}`);
+                            try {
+                              const u = await uploadFile("photos", invite.id, f);
+                              patch((c) => ({ ...c, schedule: c.schedule.map((s2, j) => (j === i ? { ...s2, photos: [...(s2.photos ?? []), u].slice(0, 3) } : s2)) }));
+                            } catch (err) {
+                              alert(err instanceof Error ? err.message : "Upload failed");
+                            } finally {
+                              setBusy("");
+                            }
+                          }}
+                        />
+                      )}
+                    </div>
+                  </Field>
+                  <Field label="Parking, instructions, anything extra">
+                    <textarea rows={2} value={e.extra ?? ""} onChange={(ev) => patch((c) => ({ ...c, schedule: c.schedule.map((s, j) => (j === i ? { ...s, extra: ev.target.value } : s)) }))} placeholder="Parking is behind the hall. The gift table is in the foyer." />
                   </Field>
                   <Field label="Note">
                     <textarea rows={2} value={e.note} onChange={(ev) => setSchedule(i, "note", ev.target.value)} />
                   </Field>
+                  <Field label="Map link for this event" hint="Only if it is somewhere other than the main venue">
+                    <input value={e.mapsUrl ?? ""} onChange={(ev) => patch((c) => ({ ...c, schedule: c.schedule.map((s, j) => (j === i ? { ...s, mapsUrl: ev.target.value } : s)) }))} placeholder="https://maps.app.goo.gl/..." />
+                  </Field>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {(
+                      [
+                        ["bus", "By bus"],
+                        ["train", "By train"],
+                        ["car", "By car"],
+                        ["auto", "By auto"],
+                      ] as const
+                    ).map(([k, lab]) => (
+                      <Field key={k} label={lab}>
+                        <input
+                          value={e.transport?.[k] ?? ""}
+                          onChange={(ev) => patch((c) => ({ ...c, schedule: c.schedule.map((s, j) => (j === i ? { ...s, transport: { ...s.transport, [k]: ev.target.value } } : s)) }))}
+                          placeholder={k === "bus" ? "Bus 222 to Kovalam stop, 5 min walk" : ""}
+                        />
+                      </Field>
+                    ))}
+                  </div>
                 </div>
               ))}
-              <button
-                type="button"
-                className="btn-secondary w-fit"
-                onClick={() => patch((c) => ({ ...c, schedule: [...c.schedule, { key: `e${Date.now()}`, title: "New event", start: "", end: "", place: "", dress: "", note: "" }] }))}
-              >
-                Add an event
-              </button>
+              <Field label="Add a ceremony" hint="Pick a type and it is added with a sensible name. Rename it any time. Guests only see the ceremonies they are invited to.">
+                <select
+                  value=""
+                  onChange={(ev) => {
+                    const t = CEREMONIES.find((x) => x.key === ev.target.value);
+                    if (!t) return;
+                    patch((c) => ({ ...c, schedule: [...c.schedule, { key: `${t.key}${Date.now() % 100000}`, title: t.title, start: "", end: "", place: "", dress: "", note: "", kids: t.kids }] }));
+                  }}
+                >
+                  <option value="">Choose a ceremony type…</option>
+                  {CEREMONIES.map((t) => (
+                    <option key={t.key} value={t.key}>
+                      {t.title} — {t.desc}
+                    </option>
+                  ))}
+                </select>
+              </Field>
             </>
           )}
 
@@ -466,6 +654,10 @@ export function Editor({ invite }: { invite: Invite }) {
               <Field label="Google Maps link" hint="Share → Copy link in Google Maps">
                 <input value={config.venue.mapsUrl} onChange={(e) => patch((c) => ({ ...c, venue: { ...c.venue, mapsUrl: e.target.value } }))} placeholder="https://maps.app.goo.gl/..." />
               </Field>
+              <label className="flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={config.venue.embedMap} onChange={(e) => patch((c) => ({ ...c, venue: { ...c.venue, embedMap: e.target.checked } }))} />
+                Show a map on the page (built from the venue name and address)
+              </label>
               <Field label="Getting there">
                 <textarea rows={3} value={config.venue.directions} onChange={(e) => patch((c) => ({ ...c, venue: { ...c.venue, directions: e.target.value } }))} />
               </Field>
@@ -483,7 +675,7 @@ export function Editor({ invite }: { invite: Invite }) {
                     <button
                       key={k}
                       type="button"
-                      onClick={() => patch((c) => ({ ...c, theme: { preset: k, colors: { ...p.colors }, fonts: p.fonts, fireflies: p.fireflies } }))}
+                      onClick={() => patch((c) => ({ ...c, theme: { ...c.theme, preset: k, colors: { ...p.colors }, fonts: p.fonts, fireflies: p.fireflies } }))}
                       className="flex items-center gap-3 rounded border p-2 text-left text-sm"
                       style={{ borderColor: config.theme.preset === k ? "var(--brand)" : "var(--line)" }}
                     >
@@ -516,19 +708,207 @@ export function Editor({ invite }: { invite: Invite }) {
                   ))}
                 </div>
               </Field>
-              <Field label="Typeface pair">
-                <select value={config.theme.fonts} onChange={(e) => patch((c) => ({ ...c, theme: { ...c.theme, fonts: e.target.value as FontPair } }))}>
-                  {Object.entries(FONT_PAIRS).map(([k, f]) => (
-                    <option key={k} value={k}>
-                      {f.label}
-                    </option>
+              <Field label="Typeface pair" hint="Your names are shown in each pair.">
+                <link rel="stylesheet" href={ALL_FONTS_HREF} />
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {(Object.entries(FONT_PAIRS) as [FontPair, (typeof FONT_PAIRS)[FontPair]][]).map(([k, f]) => (
+                    <button
+                      key={k}
+                      type="button"
+                      onClick={() => patch((c) => ({ ...c, theme: { ...c.theme, fonts: k } }))}
+                      className="rounded border p-3 text-left"
+                      style={{ borderColor: config.theme.fonts === k ? "var(--brand)" : "var(--line)", borderWidth: config.theme.fonts === k ? 2 : 1 }}
+                    >
+                      <span className="block text-2xl leading-tight" style={{ fontFamily: f.display }}>
+                        {[config.hosts.name1, config.hosts.name2].filter(Boolean).join(" & ") || "Meera & Arjun"}
+                      </span>
+                      <span className="mt-1 block text-sm" style={{ fontFamily: f.body }}>
+                        Join us for the celebration
+                      </span>
+                      <span className="mt-2 block text-xs" style={{ color: "var(--ink-2)" }}>
+                        {f.label}
+                        {f.note ? `. ${f.note}` : ""}
+                      </span>
+                    </button>
                   ))}
-                </select>
+                </div>
               </Field>
               <label className="flex items-center gap-2 text-sm">
                 <input type="checkbox" checked={config.theme.fireflies} onChange={(e) => patch((c) => ({ ...c, theme: { ...c.theme, fireflies: e.target.checked } }))} />
                 Drifting lights in the background
               </label>
+              <label className="flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={config.theme.frame} onChange={(e) => patch((c) => ({ ...c, theme: { ...c.theme, frame: e.target.checked } }))} />
+                Thin frame around the page, like a printed card
+              </label>
+              <Field label="Layout" hint="An invitation is one page opened with an envelope. A wedding website has a full-width photo at the top and a menu (Story, Where to stay, Schedule, Travel, Q & A, Wedding party, Moments). For the website, add a portrait on the Photos tab, or pick a photo background.">
+                <select value={config.theme.layout} onChange={(e) => patch((c) => ({ ...c, theme: { ...c.theme, layout: e.target.value as InviteConfig["theme"]["layout"] } }))}>
+                  <option value="invitation">Invitation: envelope, then one page</option>
+                  <option value="website">Wedding website: photo hero and a menu</option>
+                </select>
+              </Field>
+              <Field label="Animated sky" hint="A moving sky behind the whole page: stars, moon, sun, clouds, petals, birds. Pick colours that read on it (Night sky and Ocean dusk suit light text).">
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <button
+                    type="button"
+                    onClick={() => patch((c) => ({ ...c, theme: { ...c.theme, scene: "none" } }))}
+                    className="rounded border p-3 text-left text-sm"
+                    style={{ borderColor: config.theme.scene === "none" ? "var(--brand)" : "var(--line)", borderWidth: config.theme.scene === "none" ? 2 : 1 }}
+                  >
+                    <span className="font-medium">No animated sky</span>
+                  </button>
+                  {SCENE_LIST.map((sc) => (
+                    <button
+                      key={sc.key}
+                      type="button"
+                      onClick={() => patch((c) => ({ ...c, theme: { ...c.theme, scene: sc.key } }))}
+                      className="overflow-hidden rounded border text-left text-sm"
+                      style={{ borderColor: config.theme.scene === sc.key ? "var(--brand)" : "var(--line)", borderWidth: config.theme.scene === sc.key ? 2 : 1 }}
+                    >
+                      <span className="block h-12" style={{ background: sc.skyEnd ? `${sc.sky}` : sc.sky }} />
+                      <span className="block p-2">
+                        <span className="block font-medium">{sc.label}</span>
+                        <span className="block text-xs" style={{ color: "var(--ink-2)" }}>
+                          {sc.blurb}
+                        </span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </Field>
+              <Field label="Watercolour wash" hint="A painted watercolour behind the page. Ignored when a photo or animated sky is chosen.">
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+                  <button
+                    type="button"
+                    onClick={() => patch((c) => ({ ...c, theme: { ...c.theme, watercolor: "none" } }))}
+                    className="rounded border p-2 text-xs"
+                    style={{ borderColor: config.theme.watercolor === "none" ? "var(--brand)" : "var(--line)", borderWidth: config.theme.watercolor === "none" ? 2 : 1 }}
+                  >
+                    <span className="mb-1 flex h-10 items-center justify-center rounded" style={{ border: "1px dashed var(--line-2)" }}>—</span>
+                    None
+                  </button>
+                  {(Object.entries(WASHES) as [keyof typeof WASHES, (typeof WASHES)[keyof typeof WASHES]][]).map(([k, w]) => (
+                    <button
+                      key={k}
+                      type="button"
+                      onClick={() => patch((c) => ({ ...c, theme: { ...c.theme, watercolor: k } }))}
+                      className="rounded border p-2 text-xs"
+                      style={{ borderColor: config.theme.watercolor === k ? "var(--brand)" : "var(--line)", borderWidth: config.theme.watercolor === k ? 2 : 1 }}
+                    >
+                      <span className="mb-1 block h-10 rounded" style={{ background: `radial-gradient(circle at 25% 30%, ${w.pools[0]}, transparent 70%), radial-gradient(circle at 80% 80%, ${w.pools[2]}, transparent 70%), ${w.base}` }} />
+                      {w.label}
+                    </button>
+                  ))}
+                </div>
+              </Field>
+              <label className="flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={config.theme.bigAmpersand} onChange={(e) => patch((c) => ({ ...c, theme: { ...c.theme, bigAmpersand: e.target.checked } }))} />
+                A large soft "&" behind the two names
+              </label>
+              <Field label="Photo background" hint="A photograph behind the page. Photos are from Unsplash (free licence); credits are in the project README. It is ignored when an animated sky is on.">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  <button
+                    type="button"
+                    onClick={() => patch((c) => ({ ...c, theme: { ...c.theme, photo: "none" } }))}
+                    className="rounded border p-2 text-xs"
+                    style={{ borderColor: config.theme.photo === "none" ? "var(--brand)" : "var(--line)", borderWidth: config.theme.photo === "none" ? 2 : 1 }}
+                  >
+                    <span className="mb-1 flex h-12 items-center justify-center rounded" style={{ border: "1px dashed var(--line-2)" }}>—</span>
+                    No photo
+                  </button>
+                  {PHOTO_LIST.map((p) => (
+                    <button
+                      key={p.key}
+                      type="button"
+                      onClick={() => patch((c) => ({ ...c, theme: { ...c.theme, photo: p.key } }))}
+                      className="rounded border p-2 text-left text-xs"
+                      style={{ borderColor: config.theme.photo === p.key ? "var(--brand)" : "var(--line)", borderWidth: config.theme.photo === p.key ? 2 : 1 }}
+                    >
+                      <span className="mb-1 block h-12 rounded bg-cover bg-center" style={{ backgroundImage: `url(${p.file})` }} />
+                      {p.label}
+                      <span className="block" style={{ color: "var(--ink-3)" }}>
+                        by {p.credit.name}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </Field>
+              <Field label="Page background" hint="A soft painted gradient with paper grain behind the whole page. Your colours still set the text.">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+                  {Object.entries(BACKGROUNDS).map(([k, b]) => (
+                    <button
+                      key={k}
+                      type="button"
+                      onClick={() => patch((c) => ({ ...c, theme: { ...c.theme, background: k as InviteConfig["theme"]["background"] } }))}
+                      className="rounded border p-2 text-xs"
+                      style={{ borderColor: config.theme.background === k ? "var(--brand)" : "var(--line)", borderWidth: config.theme.background === k ? 2 : 1 }}
+                    >
+                      <span className="mb-1 block h-10 rounded" style={{ background: b.css ? `${b.css}, ${config.theme.colors.bg}` : config.theme.colors.bg, border: "1px solid var(--line)" }} />
+                      {b.label}
+                    </button>
+                  ))}
+                </div>
+              </Field>
+              <Field label="Headline above the names" hint='"Default" shows the small line and the sentence you set in Basics. "Stacked" shows a large capitals title, like "YOU ARE INVITED TO THE / WEDDING / of".'>
+                <select value={config.theme.titleStyle} onChange={(e) => patch((c) => ({ ...c, theme: { ...c.theme, titleStyle: e.target.value as InviteConfig["theme"]["titleStyle"] } }))}>
+                  <option value="default">Default</option>
+                  <option value="stacked">Stacked capitals</option>
+                </select>
+              </Field>
+              {config.theme.titleStyle === "stacked" && (
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <Field label="Opening line">
+                    <input value={config.texts.titleLead} onChange={(e) => patch((c) => ({ ...c, texts: { ...c.texts, titleLead: e.target.value } }))} placeholder="You are invited to the" />
+                  </Field>
+                  <Field label="Big word">
+                    <input value={config.texts.title} onChange={(e) => patch((c) => ({ ...c, texts: { ...c.texts, title: e.target.value } }))} placeholder="Wedding" />
+                  </Field>
+                  <Field label="Joining word">
+                    <input value={config.texts.titleJoin} onChange={(e) => patch((c) => ({ ...c, texts: { ...c.texts, titleJoin: e.target.value } }))} placeholder="of" />
+                  </Field>
+                </div>
+              )}
+              <Field label="Date layout">
+                <select value={config.theme.dateStyle} onChange={(e) => patch((c) => ({ ...c, theme: { ...c.theme, dateStyle: e.target.value as InviteConfig["theme"]["dateStyle"] } }))}>
+                  <option value="stacked">One line: Saturday, 6 March 2027</option>
+                  <option value="split">Split: 17 | Saturday / February 2027</option>
+                  <option value="numeric">Numbers: 26 - 08 - 2027</option>
+                </select>
+              </Field>
+              <Field label="Ornament" hint="A drawn motif above the names, matching dividers, and flourishes on the frame corners.">
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+                  {ORNAMENTS.map((o) => (
+                    <button
+                      key={o.key}
+                      type="button"
+                      onClick={() => patch((c) => ({ ...c, theme: { ...c.theme, ornament: o.key } }))}
+                      className="flex flex-col items-center gap-1 rounded border p-2 text-xs"
+                      style={{ borderColor: config.theme.ornament === o.key ? "var(--brand)" : "var(--line)", borderWidth: config.theme.ornament === o.key ? 2 : 1, color: "var(--ink)" }}
+                    >
+                      <span className="flex h-10 items-center justify-center" style={{ color: "var(--gold-ink)" }}>
+                        {o.key === "none" ? "—" : <span className="scale-[0.35]"><Motif kind={o.key} /></span>}
+                      </span>
+                      {o.label}
+                    </button>
+                  ))}
+                </div>
+              </Field>
+              <Field label="Crest above the names" hint="A symbol or short phrase. Pick one or type your own.">
+                <div className="flex flex-wrap gap-2">
+                  {["", "✦", "✝", "ੴ", "ॐ", "☪", "✡", "❀", "﷽", "بسم الله"].map((g) => (
+                    <button
+                      key={g || "none"}
+                      type="button"
+                      className="rounded border px-3 py-1.5 text-sm"
+                      style={{ borderColor: config.texts.crest === g ? "var(--brand)" : "var(--line)", minWidth: "2.5rem" }}
+                      onClick={() => patch((c) => ({ ...c, texts: { ...c.texts, crest: g } }))}
+                    >
+                      {g || "None"}
+                    </button>
+                  ))}
+                </div>
+                <input value={config.texts.crest} onChange={(e) => patch((c) => ({ ...c, texts: { ...c.texts, crest: e.target.value } }))} placeholder="Or type your own" />
+              </Field>
               <Field label="Seal initials" hint="Leave blank to use the first letters of the names">
                 <input value={config.texts.sealText} onChange={(e) => patch((c) => ({ ...c, texts: { ...c.texts, sealText: e.target.value } }))} placeholder="M & A" />
               </Field>
@@ -633,6 +1013,19 @@ export function Editor({ invite }: { invite: Invite }) {
                   />
                 </Field>
               )}
+              {config.music.source === "youtube" && (
+                <Field label="Start at" hint="Minutes and seconds, like 1:25, to skip the intro. If YouTube will not play the video inside a page, the built-in score plays instead.">
+                  <input
+                    defaultValue={config.music.youtubeStart ? `${Math.floor(config.music.youtubeStart / 60)}:${String(config.music.youtubeStart % 60).padStart(2, "0")}` : ""}
+                    onChange={(e) => {
+                      const m = e.target.value.trim().match(/^(?:(\d+):)?(\d{1,2})$/);
+                      const secs = m ? Number(m[1] || 0) * 60 + Number(m[2]) : 0;
+                      patch((c) => ({ ...c, music: { ...c.music, youtubeStart: secs } }));
+                    }}
+                    placeholder="0:00"
+                  />
+                </Field>
+              )}
               <Field label="Credit line" hint="Shown in the footer, e.g. the song and artist">
                 <input value={config.music.credit} onChange={(e) => patch((c) => ({ ...c, music: { ...c.music, credit: e.target.value } }))} />
               </Field>
@@ -664,14 +1057,249 @@ export function Editor({ invite }: { invite: Invite }) {
                   <input type="number" min={1} max={20} value={config.rsvp.maxParty} onChange={(e) => patch((c) => ({ ...c, rsvp: { ...c.rsvp, maxParty: Math.max(1, Math.min(20, Number(e.target.value) || 1)) } }))} />
                 </Field>
               </div>
-              <label className="flex items-center gap-2 text-sm">
-                <input type="checkbox" checked={config.rsvp.tickets} onChange={(e) => patch((c) => ({ ...c, rsvp: { ...c.rsvp, tickets: e.target.checked } }))} />
-                Give each "yes" a QR ticket (scan at the door from the Check-in page)
-              </label>
+              {config.rsvp.maxParty > 1 && (
+                <label className="flex items-center gap-2 text-sm">
+                  <input type="checkbox" checked={config.rsvp.askChildren} onChange={(e) => patch((c) => ({ ...c, rsvp: { ...c.rsvp, askChildren: e.target.checked } }))} />
+                  Ask for adults, children and infants separately (useful for the caterer)
+                </label>
+              )}
+              {config.event.type === "corporate" && (
+                <label className="flex items-center gap-2 text-sm">
+                  <input type="checkbox" checked={config.rsvp.tickets} onChange={(e) => patch((c) => ({ ...c, rsvp: { ...c.rsvp, tickets: e.target.checked } }))} />
+                  Give each "yes" a QR ticket (scan at the door from the Check-in page)
+                </label>
+              )}
               <label className="flex items-center gap-2 text-sm">
                 <input type="checkbox" checked={config.rsvp.askCompany} onChange={(e) => patch((c) => ({ ...c, rsvp: { ...c.rsvp, askCompany: e.target.checked } }))} />
                 Ask for company and email
               </label>
+            </>
+          )}
+
+          {tab === "extras" && (
+            <>
+              <Field label="Opening verse or blessing" hint="Shown above the names. Optional.">
+                <textarea rows={3} value={config.texts.verse} onChange={(e) => patch((c) => ({ ...c, texts: { ...c.texts, verse: e.target.value } }))} placeholder="Love is patient, love is kind…" />
+              </Field>
+              <Field label="Verse source">
+                <input value={config.texts.verseSource} onChange={(e) => patch((c) => ({ ...c, texts: { ...c.texts, verseSource: e.target.value } }))} placeholder="1 Corinthians 13:4-8" />
+              </Field>
+              <Field label="Live update banner" hint="Shown across the top of the invitation. Clear it when the news is old.">
+                <input
+                  value={config.extras.announcement}
+                  onChange={(e) => patch((c) => ({ ...c, extras: { ...c.extras, announcement: e.target.value } }))}
+                  placeholder="Update: the muhurat is now at 10:30 sharp"
+                />
+              </Field>
+
+              <p className="text-sm font-medium">Your story, chapter by chapter</p>
+              <p className="-mt-3 text-xs" style={{ color: "var(--ink-2)" }}>
+                How you met, the first date, the proposal. Each chapter can have a photo. They appear as a timeline under the short story on the Basics tab.
+              </p>
+              {config.extras.chapters.map((ch, i) => (
+                <div key={i} className="card grid gap-3 p-4">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Field label="Chapter title">
+                      <input value={ch.title} onChange={(e) => patch((c) => ({ ...c, extras: { ...c.extras, chapters: c.extras.chapters.map((x, j) => (j === i ? { ...x, title: e.target.value } : x)) } }))} placeholder="How we met" />
+                    </Field>
+                    <Field label="When">
+                      <input value={ch.date} onChange={(e) => patch((c) => ({ ...c, extras: { ...c.extras, chapters: c.extras.chapters.map((x, j) => (j === i ? { ...x, date: e.target.value } : x)) } }))} placeholder="Summer 2019" />
+                    </Field>
+                  </div>
+                  <Field label="The story">
+                    <textarea rows={3} value={ch.text} onChange={(e) => patch((c) => ({ ...c, extras: { ...c.extras, chapters: c.extras.chapters.map((x, j) => (j === i ? { ...x, text: e.target.value } : x)) } }))} />
+                  </Field>
+                  <Field label="Photo">
+                    <div className="flex items-center gap-3">
+                      {ch.photo && <img src={ch.photo} alt="" className="h-16 w-16 rounded object-cover" />}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={async (e) => {
+                          const f = e.target.files?.[0];
+                          if (!f) return;
+                          setBusy("chapter");
+                          try {
+                            const u = await uploadFile("photos", invite.id, f);
+                            patch((c) => ({ ...c, extras: { ...c.extras, chapters: c.extras.chapters.map((x, j) => (j === i ? { ...x, photo: u } : x)) } }));
+                          } catch (err) {
+                            alert(err instanceof Error ? err.message : "Upload failed");
+                          } finally {
+                            setBusy("");
+                          }
+                        }}
+                        disabled={busy === "chapter"}
+                      />
+                    </div>
+                  </Field>
+                  <button type="button" className="btn-secondary w-fit" onClick={() => patch((c) => ({ ...c, extras: { ...c.extras, chapters: c.extras.chapters.filter((_, j) => j !== i) } }))}>
+                    Remove chapter
+                  </button>
+                </div>
+              ))}
+              <button type="button" className="btn-secondary w-fit" onClick={() => patch((c) => ({ ...c, extras: { ...c.extras, chapters: [...c.extras.chapters, { title: "", text: "", date: "", photo: "" }] } }))}>
+                Add a chapter
+              </button>
+
+              <p className="mt-2 text-sm font-medium">Where to stay</p>
+              {config.extras.hotels.map((h, i) => (
+                <div key={i} className="card grid gap-2 p-4">
+                  <Field label="Hotel">
+                    <input value={h.name} onChange={(e) => patch((c) => ({ ...c, extras: { ...c.extras, hotels: c.extras.hotels.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)) } }))} />
+                  </Field>
+                  <Field label="Note" hint="Distance, rate, booking code">
+                    <input value={h.note} onChange={(e) => patch((c) => ({ ...c, extras: { ...c.extras, hotels: c.extras.hotels.map((x, j) => (j === i ? { ...x, note: e.target.value } : x)) } }))} />
+                  </Field>
+                  <Field label="Link">
+                    <input value={h.url} onChange={(e) => patch((c) => ({ ...c, extras: { ...c.extras, hotels: c.extras.hotels.map((x, j) => (j === i ? { ...x, url: e.target.value } : x)) } }))} placeholder="https://" />
+                  </Field>
+                  <button type="button" className="btn-secondary w-fit" onClick={() => patch((c) => ({ ...c, extras: { ...c.extras, hotels: c.extras.hotels.filter((_, j) => j !== i) } }))}>
+                    Remove
+                  </button>
+                </div>
+              ))}
+              <button type="button" className="btn-secondary w-fit" onClick={() => patch((c) => ({ ...c, extras: { ...c.extras, hotels: [...c.extras.hotels, { name: "", note: "", url: "" }] } }))}>
+                Add a hotel
+              </button>
+
+              <Field label="Travel" hint="Flights, trains, airport pickup. Line breaks are kept.">
+                <textarea rows={4} value={config.extras.travel} onChange={(e) => patch((c) => ({ ...c, extras: { ...c.extras, travel: e.target.value } }))} />
+              </Field>
+
+              <p className="mt-2 text-sm font-medium">Q &amp; A</p>
+              {config.extras.faq.map((f, i) => (
+                <div key={i} className="card grid gap-2 p-4">
+                  <Field label="Question">
+                    <input value={f.q} onChange={(e) => patch((c) => ({ ...c, extras: { ...c.extras, faq: c.extras.faq.map((x, j) => (j === i ? { ...x, q: e.target.value } : x)) } }))} placeholder="Are kids welcome?" />
+                  </Field>
+                  <Field label="Answer">
+                    <textarea rows={3} value={f.a} onChange={(e) => patch((c) => ({ ...c, extras: { ...c.extras, faq: c.extras.faq.map((x, j) => (j === i ? { ...x, a: e.target.value } : x)) } }))} />
+                  </Field>
+                  <button type="button" className="btn-secondary w-fit" onClick={() => patch((c) => ({ ...c, extras: { ...c.extras, faq: c.extras.faq.filter((_, j) => j !== i) } }))}>
+                    Remove
+                  </button>
+                </div>
+              ))}
+              <button type="button" className="btn-secondary w-fit" onClick={() => patch((c) => ({ ...c, extras: { ...c.extras, faq: [...c.extras.faq, { q: "", a: "" }] } }))}>
+                Add a question
+              </button>
+
+              <p className="mt-2 text-sm font-medium">Wedding party</p>
+              {config.extras.party.map((p, i) => (
+                <div key={i} className="card grid gap-2 p-4">
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <Field label="Name">
+                      <input value={p.name} onChange={(e) => patch((c) => ({ ...c, extras: { ...c.extras, party: c.extras.party.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)) } }))} />
+                    </Field>
+                    <Field label="Role">
+                      <input value={p.role} onChange={(e) => patch((c) => ({ ...c, extras: { ...c.extras, party: c.extras.party.map((x, j) => (j === i ? { ...x, role: e.target.value } : x)) } }))} placeholder="Best man, sister of the bride…" />
+                    </Field>
+                  </div>
+                  <Field label="A line about them">
+                    <input value={p.note} onChange={(e) => patch((c) => ({ ...c, extras: { ...c.extras, party: c.extras.party.map((x, j) => (j === i ? { ...x, note: e.target.value } : x)) } }))} />
+                  </Field>
+                  <Field label="Photo">
+                    <div className="flex items-center gap-3">
+                      {p.photo && <img src={p.photo} alt="" className="h-12 w-12 rounded-full object-cover" />}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={async (e) => {
+                          const f = e.target.files?.[0];
+                          e.target.value = "";
+                          if (!f) return;
+                          setBusy(`party${i}`);
+                          try {
+                            const u = await uploadFile("photos", invite.id, f);
+                            patch((c) => ({ ...c, extras: { ...c.extras, party: c.extras.party.map((x, j) => (j === i ? { ...x, photo: u } : x)) } }));
+                          } catch (err) {
+                            alert(err instanceof Error ? err.message : "Upload failed");
+                          } finally {
+                            setBusy("");
+                          }
+                        }}
+                        disabled={busy === `party${i}`}
+                      />
+                    </div>
+                  </Field>
+                  <button type="button" className="btn-secondary w-fit" onClick={() => patch((c) => ({ ...c, extras: { ...c.extras, party: c.extras.party.filter((_, j) => j !== i) } }))}>
+                    Remove
+                  </button>
+                </div>
+              ))}
+              <button type="button" className="btn-secondary w-fit" onClick={() => patch((c) => ({ ...c, extras: { ...c.extras, party: [...c.extras.party, { name: "", role: "", note: "", photo: "" }] } }))}>
+                Add a person
+              </button>
+
+              <Field label="Hashtag" hint="Shown under the date">
+                <input value={config.extras.hashtag} onChange={(e) => patch((c) => ({ ...c, extras: { ...c.extras, hashtag: e.target.value } }))} placeholder="#MeeraWedsArjun" />
+              </Field>
+
+              <p className="mt-2 text-sm font-medium">Contacts for guests who get lost</p>
+              {config.extras.contacts.map((p, i) => (
+                <div key={i} className="grid grid-cols-[1fr,1fr,auto] items-end gap-2">
+                  <Field label="Name">
+                    <input value={p.name} onChange={(e) => patch((c) => ({ ...c, extras: { ...c.extras, contacts: c.extras.contacts.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)) } }))} />
+                  </Field>
+                  <Field label="Phone">
+                    <input value={p.phone} onChange={(e) => patch((c) => ({ ...c, extras: { ...c.extras, contacts: c.extras.contacts.map((x, j) => (j === i ? { ...x, phone: e.target.value } : x)) } }))} placeholder="+91 98765 43210" />
+                  </Field>
+                  <button type="button" className="btn-secondary" aria-label="Remove contact" onClick={() => patch((c) => ({ ...c, extras: { ...c.extras, contacts: c.extras.contacts.filter((_, j) => j !== i) } }))}>
+                    ×
+                  </button>
+                </div>
+              ))}
+              <button type="button" className="btn-secondary w-fit" onClick={() => patch((c) => ({ ...c, extras: { ...c.extras, contacts: [...c.extras.contacts, { name: "", phone: "" }] } }))}>
+                Add a contact
+              </button>
+
+              <p className="mt-2 text-sm font-medium">Live stream</p>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Stream link" hint="YouTube, Zoom, or any https link">
+                  <input
+                    value={config.extras.livestream.url}
+                    onChange={(e) => patch((c) => ({ ...c, extras: { ...c.extras, livestream: { ...c.extras.livestream, url: e.target.value } } }))}
+                    placeholder="https://youtube.com/live/..."
+                  />
+                </Field>
+                <Field label="Button text">
+                  <input
+                    value={config.extras.livestream.label}
+                    onChange={(e) => patch((c) => ({ ...c, extras: { ...c.extras, livestream: { ...c.extras.livestream, label: e.target.value } } }))}
+                  />
+                </Field>
+              </div>
+
+              <p className="mt-2 text-sm font-medium">Gifts</p>
+              <Field label="Section title">
+                <input
+                  value={config.extras.gift.title}
+                  onChange={(e) => patch((c) => ({ ...c, extras: { ...c.extras, gift: { ...c.extras.gift, title: e.target.value } } }))}
+                />
+              </Field>
+              <Field label="Message" hint="Leave both this and the UPI ID empty to hide the section">
+                <textarea
+                  rows={3}
+                  value={config.extras.gift.note}
+                  onChange={(e) => patch((c) => ({ ...c, extras: { ...c.extras, gift: { ...c.extras.gift, note: e.target.value } } }))}
+                  placeholder="Your presence is the gift. If you wish to bless us, you can do so here."
+                />
+              </Field>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="UPI ID" hint="Guests on a phone get a Pay with UPI button">
+                  <input
+                    value={config.extras.gift.upiId}
+                    onChange={(e) => patch((c) => ({ ...c, extras: { ...c.extras, gift: { ...c.extras.gift, upiId: e.target.value } } }))}
+                    placeholder="name@bank"
+                  />
+                </Field>
+                <Field label="Name on UPI">
+                  <input
+                    value={config.extras.gift.upiName}
+                    onChange={(e) => patch((c) => ({ ...c, extras: { ...c.extras, gift: { ...c.extras.gift, upiName: e.target.value } } }))}
+                  />
+                </Field>
+              </div>
             </>
           )}
 

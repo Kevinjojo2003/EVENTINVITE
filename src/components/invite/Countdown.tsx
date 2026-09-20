@@ -15,16 +15,18 @@ function parts(target: number, now: number) {
 
 export function Countdown({ to, labels }: { to: string; labels: CountLabels }) {
   const target = new Date(to).getTime();
-  const [now, setNow] = useState(() => Date.now());
+  // Unknown until the page is running in the browser, so the server and browser render the same thing first.
+  const [now, setNow] = useState<number | null>(null);
 
   useEffect(() => {
+    setNow(Date.now());
     const id = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(id);
   }, []);
 
   if (!to || Number.isNaN(target)) return null;
-  const p = parts(target, now);
-  if (target - now <= 0) {
+  const p = now === null ? { days: 0, hours: 0, minutes: 0, seconds: 0 } : parts(target, now);
+  if (now !== null && target - now <= 0) {
     return <p className="display accent text-2xl italic">{labels.today}</p>;
   }
   const cells: [string, number][] = [
@@ -37,7 +39,7 @@ export function Countdown({ to, labels }: { to: string; labels: CountLabels }) {
     <div className="grid grid-cols-4 gap-x-3 gap-y-1 sm:gap-x-8" role="timer" aria-live="off">
       {cells.map(([label, value]) => (
         <div key={label} className="flex flex-col items-center">
-          <span className="display tnum text-[clamp(1.9rem,6vw,3.2rem)] leading-none">{String(value).padStart(2, "0")}</span>
+          <span className="display tnum text-[clamp(1.9rem,6vw,3.2rem)] leading-none">{now === null ? "--" : String(value).padStart(2, "0")}</span>
           <span className="eyebrow mt-2" style={{ fontSize: "0.58rem" }}>
             {label}
           </span>

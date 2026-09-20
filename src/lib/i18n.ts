@@ -1,7 +1,7 @@
 // Every visible label on the invitation comes from `config.labels`. A language pick
 // seeds them from the sets below; hosts can then edit any label in any language.
 
-export type Labels = {
+export type BaseLabels = {
   invited: string; // "You are invited"
   forGuest: string; // "For {name}"
   openHint: string;
@@ -57,6 +57,25 @@ export type Labels = {
   backToInvite: string;
 };
 
+export type SectionLabels = {
+  stay: string;
+  stayHeading: string;
+  travel: string;
+  travelHeading: string;
+  faq: string;
+  faqHeading: string;
+  party: string;
+  partyHeading: string;
+  viewHotel: string;
+  lostCall: string;
+  payUpi: string;
+  deleteReply: string;
+  replyDeleted: string;
+  deleting: string;
+  deleteConfirm: string;
+};
+export type Labels = BaseLabels & SectionLabels;
+
 export type Language = {
   code: string;
   label: string;
@@ -73,6 +92,7 @@ export const LANGUAGES: Language[] = [
   { code: "te", label: "తెలుగు (Telugu)", dir: "ltr", locale: "te-IN", script: { family: "Noto Serif Telugu", google: "family=Noto+Serif+Telugu:wght@400;500" } },
   { code: "kn", label: "ಕನ್ನಡ (Kannada)", dir: "ltr", locale: "kn-IN", script: { family: "Noto Serif Kannada", google: "family=Noto+Serif+Kannada:wght@400;500" } },
   { code: "ar", label: "العربية (Arabic)", dir: "rtl", locale: "ar", script: { family: "Noto Naskh Arabic", google: "family=Noto+Naskh+Arabic:wght@400;500" } },
+  { code: "pa", label: "ਪੰਜਾਬੀ (Punjabi)", dir: "ltr", locale: "pa-IN", script: { family: "Noto Sans Gurmukhi", google: "family=Noto+Sans+Gurmukhi:wght@400;500" } },
   { code: "ur", label: "اردو (Urdu)", dir: "rtl", locale: "ur", script: { family: "Noto Nastaliq Urdu", google: "family=Noto+Nastaliq+Urdu:wght@400;500" } },
   { code: "he", label: "עברית (Hebrew)", dir: "rtl", locale: "he", script: { family: "Noto Serif Hebrew", google: "family=Noto+Serif+Hebrew:wght@400;500" } },
   { code: "es", label: "Español", dir: "ltr", locale: "es" },
@@ -86,7 +106,7 @@ export function language(code: string): Language {
   return LANGUAGES.find((l) => l.code === code) ?? LANGUAGES[0];
 }
 
-const en: Labels = {
+const en: BaseLabels = {
   invited: "You are invited",
   forGuest: "For {name}",
   openHint: "Tap the seal to open. Sound on.",
@@ -142,7 +162,7 @@ const en: Labels = {
   backToInvite: "Back to the invitation",
 };
 
-const ml: Labels = {
+const ml: BaseLabels = {
   ...en,
   invited: "നിങ്ങളെ ക്ഷണിക്കുന്നു",
   forGuest: "{name}-ന്",
@@ -199,7 +219,7 @@ const ml: Labels = {
   backToInvite: "ക്ഷണക്കത്തിലേക്ക് മടങ്ങുക",
 };
 
-const hi: Labels = {
+const hi: BaseLabels = {
   ...en,
   invited: "आप आमंत्रित हैं",
   forGuest: "{name} के लिए",
@@ -256,7 +276,7 @@ const hi: Labels = {
   backToInvite: "निमंत्रण पर वापस जाएँ",
 };
 
-const ta: Labels = {
+const ta: BaseLabels = {
   ...en,
   invited: "உங்களை அழைக்கிறோம்",
   forGuest: "{name} அவர்களுக்கு",
@@ -313,7 +333,7 @@ const ta: Labels = {
   backToInvite: "அழைப்பிதழுக்குத் திரும்ப",
 };
 
-const ar: Labels = {
+const ar: BaseLabels = {
   ...en,
   invited: "أنتم مدعوون",
   forGuest: "إلى {name}",
@@ -370,7 +390,7 @@ const ar: Labels = {
   backToInvite: "العودة إلى الدعوة",
 };
 
-const es: Labels = {
+const es: BaseLabels = {
   ...en,
   invited: "Estás invitado",
   forGuest: "Para {name}",
@@ -427,7 +447,7 @@ const es: Labels = {
   backToInvite: "Volver a la invitación",
 };
 
-const fr: Labels = {
+const fr: BaseLabels = {
   ...en,
   invited: "Vous êtes invité",
   forGuest: "Pour {name}",
@@ -484,10 +504,29 @@ const fr: Labels = {
   backToInvite: "Retour à l’invitation",
 };
 
-const SETS: Record<string, Labels> = { en, ml, hi, ta, ar, es, fr };
+const SETS: Record<string, BaseLabels> = { en, ml, hi, ta, ar, es, fr };
+
+// Wording for the newer sections (stay, travel, Q & A, wedding party) and for deleting a reply.
+// Written for review by a native speaker before launch: see docs/AUDIT.md.
+const SECTION: Record<string, SectionLabels> = {
+  en: { stay: "Where to stay", stayHeading: "Rooms near the venue", travel: "Travel", travelHeading: "Getting here", faq: "Q & A", faqHeading: "Good to know", party: "Wedding party", partyHeading: "The people beside us", viewHotel: "View the hotel", lostCall: "Lost on the way? Call us", payUpi: "Pay with UPI", deleteReply: "Delete my reply", replyDeleted: "Your reply has been deleted.", deleting: "Deleting", deleteConfirm: "Delete your reply? The hosts will no longer see it." },
+  ml: { stay: "താമസം", stayHeading: "വേദിക്കടുത്തുള്ള മുറികൾ", travel: "യാത്ര", travelHeading: "ഇവിടെ എത്താൻ", faq: "ചോദ്യങ്ങൾ", faqHeading: "അറിയേണ്ടത്", party: "വിവാഹ സംഘം", partyHeading: "ഞങ്ങൾക്കൊപ്പമുള്ളവർ", viewHotel: "ഹോട്ടൽ കാണുക", lostCall: "വഴി തെറ്റിയോ? വിളിക്കൂ", payUpi: "UPI വഴി അയയ്ക്കാം", deleteReply: "എന്റെ മറുപടി ഇല്ലാതാക്കുക", replyDeleted: "നിങ്ങളുടെ മറുപടി ഇല്ലാതാക്കി.", deleting: "ഇല്ലാതാക്കുന്നു", deleteConfirm: "മറുപടി ഇല്ലാതാക്കണോ? ആതിഥേയർക്ക് ഇനി ഇത് കാണാനാകില്ല." },
+  hi: { stay: "ठहरने की जगह", stayHeading: "स्थल के पास कमरे", travel: "यात्रा", travelHeading: "यहाँ कैसे पहुँचें", faq: "प्रश्न और उत्तर", faqHeading: "जानने योग्य बातें", party: "विवाह मंडली", partyHeading: "हमारे अपने लोग", viewHotel: "होटल देखें", lostCall: "रास्ता भटक गए? हमें फ़ोन करें", payUpi: "UPI से भेजें", deleteReply: "मेरा उत्तर हटाएँ", replyDeleted: "आपका उत्तर हटा दिया गया है।", deleting: "हटाया जा रहा है", deleteConfirm: "उत्तर हटाएँ? मेज़बान इसे फिर नहीं देख पाएँगे।" },
+  ta: { stay: "தங்குமிடம்", stayHeading: "மண்டபத்திற்கு அருகிலுள்ள அறைகள்", travel: "பயணம்", travelHeading: "இங்கே வருவது எப்படி", faq: "கேள்வி பதில்", faqHeading: "தெரிந்து கொள்ள", party: "திருமணக் குழு", partyHeading: "எங்களுடன் இருப்பவர்கள்", viewHotel: "ஹோட்டலைப் பார்க்க", lostCall: "வழி தெரியவில்லையா? அழையுங்கள்", payUpi: "UPI மூலம் அனுப்ப", deleteReply: "என் பதிலை நீக்கு", replyDeleted: "உங்கள் பதில் நீக்கப்பட்டது.", deleting: "நீக்குகிறது", deleteConfirm: "பதிலை நீக்கவா? விருந்தினர் அழைப்பாளர்கள் இனி இதைப் பார்க்க முடியாது." },
+  ar: { stay: "الإقامة", stayHeading: "غرف قريبة من القاعة", travel: "السفر", travelHeading: "كيف تصلون إلينا", faq: "أسئلة وأجوبة", faqHeading: "معلومات مفيدة", party: "مرافقو العروسين", partyHeading: "من يقفون بجانبنا", viewHotel: "عرض الفندق", lostCall: "ضللتم الطريق؟ اتصلوا بنا", payUpi: "الدفع عبر UPI", deleteReply: "حذف ردي", replyDeleted: "تم حذف ردك.", deleting: "جارٍ الحذف", deleteConfirm: "هل تريد حذف ردك؟ لن يراه المضيفون بعد الآن." },
+  es: { stay: "Alojamiento", stayHeading: "Habitaciones cerca del lugar", travel: "Viaje", travelHeading: "Cómo llegar", faq: "Preguntas y respuestas", faqHeading: "Es bueno saber", party: "Cortejo nupcial", partyHeading: "Quienes nos acompañan", viewHotel: "Ver el hotel", lostCall: "¿Perdidos? Llámenos", payUpi: "Pagar con UPI", deleteReply: "Eliminar mi respuesta", replyDeleted: "Tu respuesta ha sido eliminada.", deleting: "Eliminando", deleteConfirm: "¿Eliminar tu respuesta? Los anfitriones ya no la verán." },
+  fr: { stay: "Hébergement", stayHeading: "Chambres près du lieu", travel: "Voyage", travelHeading: "Comment venir", faq: "Questions et réponses", faqHeading: "Bon à savoir", party: "Cortège", partyHeading: "Ceux qui nous entourent", viewHotel: "Voir l'hôtel", lostCall: "Perdus ? Appelez-nous", payUpi: "Payer avec UPI", deleteReply: "Supprimer ma réponse", replyDeleted: "Votre réponse a été supprimée.", deleting: "Suppression", deleteConfirm: "Supprimer votre réponse ? Les hôtes ne la verront plus." },
+  te: { stay: "బస", stayHeading: "వేదికకు దగ్గరలో గదులు", travel: "ప్రయాణం", travelHeading: "ఇక్కడికి ఎలా రావాలి", faq: "ప్రశ్నలు - సమాధానాలు", faqHeading: "తెలుసుకోవాల్సినవి", party: "పెళ్లి బృందం", partyHeading: "మాతో ఉన్నవారు", viewHotel: "హోటల్ చూడండి", lostCall: "దారి తప్పారా? మాకు కాల్ చేయండి", payUpi: "UPI ద్వారా పంపండి", deleteReply: "నా సమాధానాన్ని తొలగించు", replyDeleted: "మీ సమాధానం తొలగించబడింది.", deleting: "తొలగిస్తోంది", deleteConfirm: "సమాధానాన్ని తొలగించాలా? ఆతిథ్యులకు ఇది ఇక కనిపించదు." },
+  kn: { stay: "ವಾಸ್ತವ್ಯ", stayHeading: "ಸ್ಥಳದ ಬಳಿ ಕೊಠಡಿಗಳು", travel: "ಪ್ರಯಾಣ", travelHeading: "ಇಲ್ಲಿಗೆ ಹೇಗೆ ಬರುವುದು", faq: "ಪ್ರಶ್ನೆ ಉತ್ತರ", faqHeading: "ತಿಳಿಯಬೇಕಾದದ್ದು", party: "ಮದುವೆ ತಂಡ", partyHeading: "ನಮ್ಮೊಂದಿಗಿರುವವರು", viewHotel: "ಹೋಟೆಲ್ ನೋಡಿ", lostCall: "ದಾರಿ ತಪ್ಪಿದ್ದೀರಾ? ನಮಗೆ ಕರೆ ಮಾಡಿ", payUpi: "UPI ಮೂಲಕ ಕಳುಹಿಸಿ", deleteReply: "ನನ್ನ ಉತ್ತರವನ್ನು ಅಳಿಸಿ", replyDeleted: "ನಿಮ್ಮ ಉತ್ತರವನ್ನು ಅಳಿಸಲಾಗಿದೆ.", deleting: "ಅಳಿಸುತ್ತಿದೆ", deleteConfirm: "ಉತ್ತರವನ್ನು ಅಳಿಸಬೇಕೇ? ಆತಿಥೇಯರಿಗೆ ಇದು ಇನ್ನು ಕಾಣಿಸುವುದಿಲ್ಲ." },
+  ur: { stay: "قیام", stayHeading: "مقام کے قریب کمرے", travel: "سفر", travelHeading: "یہاں کیسے پہنچیں", faq: "سوال و جواب", faqHeading: "جاننے کی باتیں", party: "ہمراہی", partyHeading: "ہمارے ساتھ کھڑے لوگ", viewHotel: "ہوٹل دیکھیں", lostCall: "راستہ بھول گئے؟ ہمیں کال کریں", payUpi: "UPI سے بھیجیں", deleteReply: "میرا جواب حذف کریں", replyDeleted: "آپ کا جواب حذف کر دیا گیا ہے۔", deleting: "حذف ہو رہا ہے", deleteConfirm: "جواب حذف کریں؟ میزبان اسے مزید نہیں دیکھ سکیں گے۔" },
+  he: { stay: "לינה", stayHeading: "חדרים ליד האולם", travel: "נסיעה", travelHeading: "איך מגיעים", faq: "שאלות ותשובות", faqHeading: "טוב לדעת", party: "המלווים", partyHeading: "מי שלצדנו", viewHotel: "לצפייה במלון", lostCall: "הלכתם לאיבוד? התקשרו אלינו", payUpi: "תשלום ב-UPI", deleteReply: "מחקו את התגובה שלי", replyDeleted: "התגובה שלך נמחקה.", deleting: "מוחק", deleteConfirm: "למחוק את התגובה? המארחים לא יראו אותה יותר." },
+  pa: { stay: "ਠਹਿਰਨ ਦੀ ਥਾਂ", stayHeading: "ਸਥਾਨ ਦੇ ਨੇੜੇ ਕਮਰੇ", travel: "ਸਫ਼ਰ", travelHeading: "ਇੱਥੇ ਕਿਵੇਂ ਪਹੁੰਚਣਾ ਹੈ", faq: "ਸਵਾਲ ਅਤੇ ਜਵਾਬ", faqHeading: "ਜਾਣਨ ਵਾਲੀਆਂ ਗੱਲਾਂ", party: "ਵਿਆਹ ਦੀ ਟੋਲੀ", partyHeading: "ਸਾਡੇ ਨਾਲ ਖੜ੍ਹੇ ਲੋਕ", viewHotel: "ਹੋਟਲ ਵੇਖੋ", lostCall: "ਰਾਹ ਭੁੱਲ ਗਏ? ਸਾਨੂੰ ਫ਼ੋਨ ਕਰੋ", payUpi: "UPI ਰਾਹੀਂ ਭੇਜੋ", deleteReply: "ਮੇਰਾ ਜਵਾਬ ਮਿਟਾਓ", replyDeleted: "ਤੁਹਾਡਾ ਜਵਾਬ ਮਿਟਾ ਦਿੱਤਾ ਗਿਆ ਹੈ।", deleting: "ਮਿਟਾ ਰਹੇ ਹਾਂ", deleteConfirm: "ਜਵਾਬ ਮਿਟਾਉਣਾ ਹੈ? ਮੇਜ਼ਬਾਨ ਇਸਨੂੰ ਹੁਣ ਨਹੀਂ ਵੇਖ ਸਕਣਗੇ।" },
+  de: { stay: "Unterkunft", stayHeading: "Zimmer in der Nähe", travel: "Anreise", travelHeading: "So kommen Sie zu uns", faq: "Fragen und Antworten", faqHeading: "Gut zu wissen", party: "Hochzeitsgesellschaft", partyHeading: "Die Menschen an unserer Seite", viewHotel: "Hotel ansehen", lostCall: "Verlaufen? Rufen Sie uns an", payUpi: "Mit UPI bezahlen", deleteReply: "Meine Antwort löschen", replyDeleted: "Ihre Antwort wurde gelöscht.", deleting: "Wird gelöscht", deleteConfirm: "Antwort löschen? Die Gastgeber sehen sie dann nicht mehr." },
+  pt: { stay: "Hospedagem", stayHeading: "Quartos perto do local", travel: "Viagem", travelHeading: "Como chegar", faq: "Perguntas e respostas", faqHeading: "Bom saber", party: "Padrinhos", partyHeading: "Quem está ao nosso lado", viewHotel: "Ver o hotel", lostCall: "Perdido? Ligue para nós", payUpi: "Pagar com UPI", deleteReply: "Excluir minha resposta", replyDeleted: "Sua resposta foi excluída.", deleting: "Excluindo", deleteConfirm: "Excluir sua resposta? Os anfitriões não a verão mais." },
+};
 
 export function labelsFor(code: string): Labels {
-  return { ...(SETS[code] ?? en) };
+  return { ...(SETS[code] ?? en), ...(SECTION[code] ?? SECTION.en) };
 }
 
 export function fill(s: string, vars: Record<string, string>) {
