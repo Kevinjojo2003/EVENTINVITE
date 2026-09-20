@@ -9,7 +9,8 @@ function hexToRgb(hex: string) {
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255] as const;
 }
 
-export function Fireflies({ color }: { color: string }) {
+// `inside` keeps the lights within the page frame instead of drifting over its border.
+export function Fireflies({ color, inside = false }: { color: string; inside?: boolean }) {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -80,5 +81,5 @@ export function Fireflies({ color }: { color: string }) {
     };
   }, [color]);
 
-  return <canvas ref={ref} aria-hidden="true" className="pointer-events-none fixed inset-0 z-0" />;
+  return <canvas ref={ref} aria-hidden="true" className={`pointer-events-none fixed inset-0 z-0 ${inside ? "[clip-path:inset(13px)] sm:[clip-path:inset(21px)]" : ""}`} />;
 }

@@ -12,7 +12,7 @@ export default async function TicketPage({ params }: Params) {
   const { slug, code } = await params;
   const db = createAdminClient();
   const { data: inv } = await db.from("invites").select("id, slug, event_type, published, config").eq("slug", slug.toLowerCase()).maybeSingle();
-  if (!inv || !inv.published) notFound();
+  if (!inv || !inv.published || inv.event_type !== "corporate") notFound();
   const { data: r } = await db.from("rsvps").select("name, ticket_code, checked_in_at, attending").eq("invite_id", inv.id).eq("ticket_code", code.toUpperCase()).maybeSingle();
   if (!r || !r.attending) notFound();
 

@@ -3,7 +3,29 @@ import { createClient } from "@/lib/supabase/client";
 
 // Uploads into the signed-in user's own folder ({user_id}/{invite_id}/...), which is what
 // the storage policies allow. Returns the public URL.
-export async function uploadFile(bucket: "photos" | "music", inviteId: string, file: File): Promise<string> {
+// Scales a photo down to at most 2000px on the long side and re-encodes it as JPEG, so an invitation
+// loads fast on a phone. Falls back to the original if the browser cannot decode it.
+async function shrink(file: File): Promise<File> {
+  if (!/^image\/(jpeg|png|webp)$/.test(file.type) || file.size < 400_000) return file;
+  try {
+    const bmp = await createImageBitmap(file);
+    const scale = Math.min(1, 2000 / Math.max(bmp.width, bmp.height));
+    const w = Math.round(bmp.width * scale);
+    const h = Math.round(bmp.height * scale);
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    canvas.getContext("2d")?.drawImage(bmp, 0, 0, w, h);
+    const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, "image/jpeg", 0.82));
+    if (!blob || blob.size >= file.size) return file;
+    return new File([blob], file.name.replace(/\.[a-z0-9]+$/i, "") + ".jpg", { type: "image/jpeg" });
+  } catch {
+    return file;
+  }
+}
+
+export async function uploadFile(bucket: "photos" | "music", inviteId: string, original: File): Promise<string> {
+  const file = bucket === "photos" ? await shrink(original) : original;
   const supabase = createClient();
   const {
     data: { user },
