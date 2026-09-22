@@ -1,18 +1,20 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { TabBar } from "@/components/dashboard/TabBar";
 
 export default async function InviteLayout({ children, params }: { children: React.ReactNode; params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
   const { data: inv } = await supabase.from("invites").select("id, slug, event_type").eq("id", id).maybeSingle();
   if (!inv) notFound();
+  const corporate = inv.event_type === "corporate";
   const tabs = [
     { href: `/dashboard/${id}`, label: "Edit" },
     { href: `/dashboard/${id}/guests`, label: "Guests" },
     { href: `/dashboard/${id}/rsvps`, label: "RSVPs" },
     // QR tickets and door check-in exist for corporate events only.
-    ...(inv.event_type === "corporate" ? [{ href: `/dashboard/${id}/checkin`, label: "Check-in" }] : []),
+    ...(corporate ? [{ href: `/dashboard/${id}/checkin`, label: "Check-in" }] : []),
   ];
   return (
     <div>
@@ -21,14 +23,18 @@ export default async function InviteLayout({ children, params }: { children: Rea
           <Link href="/dashboard" className="mr-3 py-2.5 text-sm" style={{ color: "var(--ink-2)" }}>
             ← All events
           </Link>
-          {tabs.map((t) => (
-            <Link key={t.href} href={t.href} className="px-3 py-2.5 text-sm hover:underline">
-              {t.label}
-            </Link>
-          ))}
+          {/* On a phone the same links live in the bottom tab bar; this row is desktop-only. */}
+          <div className="hidden md:flex md:gap-1">
+            {tabs.map((t) => (
+              <Link key={t.href} href={t.href} className="px-3 py-2.5 text-sm hover:underline">
+                {t.label}
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
-      {children}
+      <div className="pb-[70px] md:pb-0">{children}</div>
+      <TabBar id={id} corporate={corporate} />
     </div>
   );
 }
