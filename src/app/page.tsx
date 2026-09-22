@@ -44,7 +44,7 @@ export default function Landing() {
       <Reveal>
         <main>
           {/* ---------- Hero ---------- */}
-          <section id="top" className="grid items-center gap-16 px-5 pb-24 pt-16 md:px-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12 lg:px-[120px] lg:pb-32 lg:pt-24" style={{ backgroundImage: "var(--mesh)" }}>
+          <section id="top" className="grid items-center gap-16 px-5 pb-24 pt-16 md:px-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12 lg:px-[120px] lg:pb-32 lg:pt-24">
             <div>
               <p className="m-eyebrow m-fu">The invitation, and everything after it</p>
               <h1 className="m-dis m-fu m-fu-2 mt-6 text-[clamp(2.9rem,8.4vw,6rem)] leading-[0.98]" style={{ textWrap: "balance" }}>
@@ -68,7 +68,7 @@ export default function Landing() {
 
             {/* the arch, with a phone inside it and two small product notes around it */}
             <div className="relative mx-auto w-full max-w-[460px]" data-parallax>
-              <div className="m-arch relative flex justify-center px-6 pb-0 pt-14" style={{ background: "var(--grad-dusk)", height: 640, overflow: "hidden", boxShadow: "0 40px 70px -40px rgba(107, 36, 80, 0.6)" }}>
+              <div className="m-arch relative flex justify-center px-6 pb-0 pt-14" style={{ background: "var(--paper-2)", height: 640, overflow: "hidden", boxShadow: "var(--shadow)" }}>
                 <div className="relative h-[640px] w-[300px] shrink-0 rounded-[40px] p-[10px]" style={{ background: "#1c1512", boxShadow: "var(--shadow)" }}>
                   <LivePhone src="/templates/kerala-hindu?embed=1" title="A live invitation" />
                 </div>
@@ -91,13 +91,15 @@ export default function Landing() {
           </section>
 
           {/* ---------- Examples ---------- */}
-          <section id="examples" className="border-y py-24 lg:py-28" style={{ background: "linear-gradient(180deg, #f6e9d6 0%, #f3d9cf 100%)", borderColor: "var(--line)" }}>
+          <section id="examples" className="py-24 lg:py-28" style={{ background: "var(--forest)", color: "#F3EFE8" }}>
             <div className="mx-auto mb-14 max-w-[640px] px-5 text-center">
-              <p className="m-eyebrow">Made with {app}</p>
+              <p className="m-eyebrow" style={{ color: "#B8C2B3" }}>
+                Made with {app}
+              </p>
               <h2 className="m-dis mt-4 text-[clamp(2rem,4.6vw,3.1rem)] leading-[1.08]">
-                Eight invitations, <em>eight different worlds.</em>
+                Eight invitations, <em style={{ color: "var(--gold-soft)" }}>eight different worlds.</em>
               </h2>
-              <p className="mt-5 text-[17px] leading-[1.65]" style={{ color: "var(--ink-2)" }}>
+              <p className="mt-5 text-[17px] leading-[1.65]" style={{ color: "#B8C2B3" }}>
                 Nothing here is a template with your name dropped in. Each is set in its own script, with the wording that tradition actually uses.
               </p>
             </div>
@@ -125,7 +127,7 @@ export default function Landing() {
                           {e.date}
                         </p>
                       </div>
-                      <figcaption className="mt-5 text-center text-xs font-semibold uppercase tracking-[0.12em]" style={{ color: "var(--ink-3)" }}>
+                      <figcaption className="mt-5 text-center text-xs font-semibold uppercase tracking-[0.12em]" style={{ color: "#B8C2B3" }}>
                         {e.caption}
                       </figcaption>
                     </figure>
@@ -134,7 +136,7 @@ export default function Landing() {
               ))}
             </ul>
             <div className="mt-10 text-center">
-              <Link href="/templates" className="m-btn m-btn-sec">
+              <Link href="/templates" className="m-btn m-btn-sec" style={{ borderColor: "rgba(243,239,232,.4)", color: "#F3EFE8" }}>
                 Browse all templates
               </Link>
             </div>
@@ -170,7 +172,7 @@ export default function Landing() {
           </section>
 
           {/* ---------- Features ---------- */}
-          <section className="border-y px-5 py-24 md:px-12 lg:px-[120px] lg:py-32" style={{ background: "linear-gradient(180deg, #f3ead9 0%, #fbe7cf 100%)", borderColor: "var(--line)" }}>
+          <section className="border-y px-5 py-24 md:px-12 lg:px-[120px] lg:py-32" style={{ background: "var(--paper-2)", borderColor: "var(--line)" }}>
             <div className="mx-auto mb-16 max-w-[680px] text-center">
               <p className="m-eyebrow">What you actually get</p>
               <h2 className="m-dis mt-4 text-[clamp(2rem,4.6vw,3.1rem)] leading-[1.08]">
@@ -243,14 +245,14 @@ export default function Landing() {
           </section>
 
           {/* ---------- Closing ---------- */}
-          <section className="px-5 py-28 text-center md:px-12 lg:py-36" style={{ background: "var(--grad-night)", color: "var(--paper)" }}>
+          <section className="px-5 py-28 text-center md:px-12 lg:py-36" style={{ background: "var(--forest)", color: "#F3EFE8" }}>
             <div className="m-ruled mx-auto mb-10 max-w-[200px]" style={{ color: "var(--gold)" }}>
               <Diamond />
             </div>
             <h2 className="m-dis mx-auto max-w-[800px] text-[clamp(2.1rem,5.4vw,3.8rem)] leading-[1.08]" style={{ textWrap: "balance" }}>
               Someone is going to keep this link on their phone <span style={{ color: "var(--gold-soft)", fontStyle: "italic" }}>for years.</span>
             </h2>
-            <Link href="/login" className="m-btn mt-11" style={{ background: "var(--gold-soft)", color: "#1f1a17", borderColor: "var(--gold-soft)" }}>
+            <Link href="/login" className="m-btn mt-11" style={{ background: "var(--gold-soft)", color: "var(--forest)", borderColor: "var(--gold-soft)" }}>
               Create your invitation, free
             </Link>
           </section>
