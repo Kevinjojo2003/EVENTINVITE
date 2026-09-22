@@ -115,7 +115,10 @@ export type InviteConfig = {
     layout: "invitation" | "website"; // one invitation page, or a wedding website with a photo hero and a menu
     watercolor: "none" | "aqua" | "rose" | "lilac" | "sage" | "gold"; // a painted watercolour wash behind the page
     bigAmpersand: boolean; // a large soft "&" behind the names
-    photo: "none" | "blue-gold" | "green-leaves" | "pink-roses" | "white-paper" | "botanical-paper"; // a photograph behind the page
+    photo: "none" | "custom" | "blue-gold" | "green-leaves" | "pink-roses" | "white-paper" | "botanical-paper"; // a photograph behind the page; "custom" uses photoUrl below
+    photoUrl: string; // the host's own uploaded photo, used when photo === "custom"
+    photoOpacity: number; // 0-100: how strong the scrim over the custom photo is, so the writing stays readable
+    photoScrim: "light" | "dark"; // colour of that scrim: light scrim for dark text, dark scrim for light text
     scene: "none" | "moonlight" | "sunrise-journey" | "golden-hour" | "garden-day" | "ocean-dusk"; // animated sky behind the page
     background: "flat" | "mist" | "blush" | "dusk" | "sage"; // painted gradient behind the whole page
     dateStyle: "stacked" | "split" | "numeric" | "formal"; // one line, "17 | SATURDAY / AUGUST 2027" split by a rule, "26 - 08 - 2027", or a spelled-out engraved-card date

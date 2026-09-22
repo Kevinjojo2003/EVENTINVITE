@@ -1566,7 +1566,7 @@ function slots(count: number, date: string, tz: string): { start: string; end: s
 // and for a real invitation the host starts from this template.
 function applyDesign(t: Template, cfg: InviteConfig): InviteConfig {
   const p = PRESETS[t.preset];
-  cfg.theme = { preset: t.preset, colors: { ...p.colors }, fonts: p.fonts, fireflies: p.fireflies, frame: t.frame, ornament: t.ornament, background: t.background ?? "flat", dateStyle: t.dateStyle ?? "stacked", titleStyle: t.titleStyle ?? "default", scene: t.scene ?? "none", photo: t.photo ?? "none", watercolor: t.watercolor ?? "none", bigAmpersand: t.bigAmpersand ?? false, layout: t.layout ?? "invitation" };
+  cfg.theme = { preset: t.preset, colors: { ...p.colors }, fonts: p.fonts, fireflies: p.fireflies, frame: t.frame, ornament: t.ornament, background: t.background ?? "flat", dateStyle: t.dateStyle ?? "stacked", titleStyle: t.titleStyle ?? "default", scene: t.scene ?? "none", photo: t.photo ?? "none", photoUrl: "", photoOpacity: 55, photoScrim: "dark", watercolor: t.watercolor ?? "none", bigAmpersand: t.bigAmpersand ?? false, layout: t.layout ?? "invitation" };
   cfg.texts.crest = t.crest;
   return cfg;
 }

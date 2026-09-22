@@ -138,11 +138,17 @@ export function Invitation({ config, slug, guest, preview }: Props) {
   };
 
   const website = c.theme.layout === "website";
-  const heroImage = c.heroPhoto || (c.theme.photo && c.theme.photo !== "none" ? PHOTOS[c.theme.photo].file : "");
+  const customPhotoFile = c.theme.photo === "custom" ? c.theme.photoUrl : "";
+  const heroImage = c.heroPhoto || customPhotoFile || (c.theme.photo && c.theme.photo !== "none" && c.theme.photo !== "custom" ? PHOTOS[c.theme.photo].file : "");
   const scene = c.theme.scene && c.theme.scene !== "none" ? c.theme.scene : null;
-  const photo = !website && !scene && c.theme.photo && c.theme.photo !== "none" ? c.theme.photo : null;
-  const wash = !scene && !photo && c.theme.watercolor && c.theme.watercolor !== "none" ? c.theme.watercolor : null;
-  const bgCss = scene || photo || wash ? "" : BACKGROUNDS[c.theme.background]?.css ?? "";
+  const photoOn = !website && !scene && c.theme.photo && c.theme.photo !== "none" && (c.theme.photo !== "custom" || !!c.theme.photoUrl);
+  const photoBackdrop = !photoOn
+    ? null
+    : c.theme.photo === "custom"
+      ? { file: c.theme.photoUrl, tint: `rgba(${c.theme.photoScrim === "dark" ? "10,8,6" : "255,252,245"}, ${c.theme.photoOpacity / 100})`, position: "center" }
+      : { file: PHOTOS[c.theme.photo as Exclude<typeof c.theme.photo, "none" | "custom">].file, tint: PHOTOS[c.theme.photo as Exclude<typeof c.theme.photo, "none" | "custom">].tint, position: PHOTOS[c.theme.photo as Exclude<typeof c.theme.photo, "none" | "custom">].position };
+  const wash = !scene && !photoOn && c.theme.watercolor && c.theme.watercolor !== "none" ? c.theme.watercolor : null;
+  const bgCss = scene || photoOn || wash ? "" : BACKGROUNDS[c.theme.background]?.css ?? "";
   const garden = c.theme.ornament === "garden";
   const wild = c.theme.ornament === "wildflower";
   const dateParts = dateP(c.event.dateTime, tz, loc);
@@ -174,7 +180,7 @@ export function Invitation({ config, slug, guest, preview }: Props) {
         </>
       )}
       {scene && <Scene kind={scene} />}
-      {photo && <PhotoBackdrop photo={photo} />}
+      {photoBackdrop && <PhotoBackdrop file={photoBackdrop.file} tint={photoBackdrop.tint} position={photoBackdrop.position} />}
       {wash && <Watercolor kind={wash} />}
       {garden && (
         <>
