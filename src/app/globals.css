@@ -130,7 +130,7 @@ html { scroll-behavior: smooth; scroll-padding-top: 88px; }
 }
 .inv .dim { color: var(--inv-ink-dim); }
 .inv .accent { color: var(--inv-accent); }
-.inv .hairline { border-color: color-mix(in srgb, var(--inv-accent) 30%, transparent); }
+.inv .hairline { border-color: color-mix(in srgb, var(--inv-accent) 50%, transparent); }
 .inv .tnum { font-variant-numeric: tabular-nums; }
 .inv input, .inv textarea {
   background: transparent;
