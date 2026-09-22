@@ -181,7 +181,44 @@ export type Guest = {
   events: string[]; // schedule keys this guest is invited to; empty means all
   sent_at: string | null;
   created_at: string;
+  group_name: string | null; // "Bride's family", "Groom's friends"...
+  meal: string | null; // "veg" | "non-veg" | "vegan" | "jain"
+  hotel: string | null; // which hotel/room, free text
+  transport: string | null; // pickup/drop note
 };
+
+export type Task = {
+  id: string;
+  invite_id: string;
+  title: string;
+  category: string;
+  due_date: string | null; // YYYY-MM-DD
+  done: boolean;
+  created_at: string;
+};
+
+export type Expense = {
+  id: string;
+  invite_id: string;
+  category: string;
+  vendor: string;
+  quoted: number;
+  paid: number;
+  due_date: string | null;
+  note: string | null;
+  created_at: string;
+};
+
+export const EXPENSE_CATEGORIES = [
+  "Venue", "Catering", "Decoration", "Photography", "Videography", "Clothing", "Jewellery",
+  "Makeup", "Invitations", "Transport", "Accommodation", "Entertainment", "Gifts", "Miscellaneous",
+] as const;
+
+export const CHECKLIST_DEFAULTS: { phase: string; items: string[] }[] = [
+  { phase: "6 months before", items: ["Book venue", "Set the budget", "Finalise guest list", "Book photographer", "Book caterer", "Book decorator"] },
+  { phase: "3 months before", items: ["Send invitations", "Finalise outfits", "Book accommodation", "Finalise menu"] },
+  { phase: "1 month before", items: ["Confirm RSVPs", "Plan seating", "Confirm vendors", "Clear final payments"] },
+];
 
 export type Rsvp = {
   id: string;

@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Calendar, QrCode, Users, MessageSquare } from "lucide-react";
+import { Calendar, ListChecks, QrCode, Users, MessageSquare, Wallet } from "lucide-react";
 
 // A bottom tab bar for one event's dashboard pages, shown on phones only (the app design's
 // "one app, host mode" navigation). Desktop keeps the horizontal tab row in the layout above.
@@ -11,6 +11,8 @@ export function TabBar({ id, corporate }: { id: string; corporate: boolean }) {
     { href: `/dashboard/${id}`, label: "Edit", icon: Calendar },
     { href: `/dashboard/${id}/guests`, label: "Guests", icon: Users },
     { href: `/dashboard/${id}/rsvps`, label: "Replies", icon: MessageSquare },
+    { href: `/dashboard/${id}/checklist`, label: "Tasks", icon: ListChecks },
+    { href: `/dashboard/${id}/budget`, label: "Budget", icon: Wallet },
     ...(corporate ? [{ href: `/dashboard/${id}/checkin`, label: "Scan", icon: QrCode }] : []),
   ];
   return (

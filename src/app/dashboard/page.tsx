@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { EVENT_TYPES, type EventType, type Guest, type Invite, type Rsvp } from "@/lib/types";
+import { EVENT_TYPES, type EventType, type Expense, type Guest, type Invite, type Rsvp, type Task } from "@/lib/types";
 import { displayTitle, normalizeConfig } from "@/lib/themes";
 import { inviteUrl, shortDate } from "@/lib/format";
 import { HomeHero } from "@/components/dashboard/HomeHero";
@@ -14,13 +14,19 @@ export default async function DashboardHome() {
   const primary = invites.find((i) => i.published) ?? invites[0];
   let guests: Guest[] = [];
   let rsvps: Rsvp[] = [];
+  let tasks: Task[] = [];
+  let expenses: Expense[] = [];
   if (primary) {
-    const [g, r] = await Promise.all([
+    const [g, r, t, e] = await Promise.all([
       supabase.from("guests").select("*").eq("invite_id", primary.id),
       supabase.from("rsvps").select("*").eq("invite_id", primary.id),
+      supabase.from("tasks").select("*").eq("invite_id", primary.id),
+      supabase.from("expenses").select("*").eq("invite_id", primary.id),
     ]);
     guests = (g.data ?? []) as Guest[];
     rsvps = (r.data ?? []) as Rsvp[];
+    tasks = (t.data ?? []) as Task[];
+    expenses = (e.data ?? []) as Expense[];
   }
 
   const others = primary ? invites.filter((i) => i.id !== primary.id) : invites;
@@ -28,7 +34,7 @@ export default async function DashboardHome() {
   return (
     <main className="mx-auto w-full max-w-7xl px-5 py-10 sm:px-8">
       {primary ? (
-        <HomeHero invite={primary} guests={guests} rsvps={rsvps} />
+        <HomeHero invite={primary} guests={guests} rsvps={rsvps} tasks={tasks} expenses={expenses} />
       ) : (
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>

@@ -1,8 +1,8 @@
 "use client";
-import { useMemo, useState, useTransition } from "react";
+import { Fragment, useMemo, useState, useTransition } from "react";
 import type { Guest } from "@/lib/types";
 import { inviteUrl } from "@/lib/format";
-import { addGuests, deleteGuest, markSent, setGuestEvents } from "@/app/dashboard/actions";
+import { addGuests, deleteGuest, markSent, setGuestEvents, updateGuestDetails } from "@/app/dashboard/actions";
 
 type Props = {
   inviteId: string;
@@ -35,6 +35,7 @@ export function GuestsClient({ inviteId, slug, published, title, headline, guest
     });
   }
   const [msg, setMsg] = useState("");
+  const [expanded, setExpanded] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "unsent" | "sent" | "replied">("all");
   const [template, setTemplate] = useState(`Hello {name}! ${title} ${headline}. Your personal invitation is here: {link}`);
   const [pending, start] = useTransition();
@@ -226,19 +227,21 @@ export function GuestsClient({ inviteId, slug, published, title, headline, guest
               <th className="px-4 py-3">Guest</th>
               <th className="px-4 py-3">Number</th>
               <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3">Group / meal</th>
               <th className="px-4 py-3 text-right">Send</th>
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-4 py-8 text-center" style={{ color: "var(--ink-2)" }}>
+                <td colSpan={5} className="px-4 py-8 text-center" style={{ color: "var(--ink-2)" }}>
                   No guests {filter !== "all" ? "in this view" : "yet"}.
                 </td>
               </tr>
             )}
             {rows.map((g) => (
-              <tr key={g.id} className="border-b last:border-0" style={{ borderColor: "var(--line)" }}>
+              <Fragment key={g.id}>
+              <tr className="border-b last:border-0" style={{ borderColor: "var(--line)" }}>
                 <td className="px-4 py-3 font-medium">
                   {g.name}
                   {multi && (
@@ -280,6 +283,11 @@ export function GuestsClient({ inviteId, slug, published, title, headline, guest
                   )}
                 </td>
                 <td className="px-4 py-3">
+                  <button type="button" className="text-xs underline-offset-4 hover:underline" style={{ color: "var(--ink-2)" }} onClick={() => setExpanded(expanded === g.id ? null : g.id)}>
+                    {[g.group_name, g.meal].filter(Boolean).join(" · ") || "Add details"}
+                  </button>
+                </td>
+                <td className="px-4 py-3">
                   <div className="flex justify-end gap-2">
                     {g.phone && (
                       <a
@@ -301,10 +309,67 @@ export function GuestsClient({ inviteId, slug, published, title, headline, guest
                   </div>
                 </td>
               </tr>
+              {expanded === g.id && <GuestDetailsRow inviteId={inviteId} guest={g} onClose={() => setExpanded(null)} onError={setMsg} />}
+              </Fragment>
             ))}
           </tbody>
         </table>
       </div>
     </main>
+  );
+}
+
+function GuestDetailsRow({ inviteId, guest, onClose, onError }: { inviteId: string; guest: Guest; onClose: () => void; onError: (m: string) => void }) {
+  const [group, setGroup] = useState(guest.group_name ?? "");
+  const [meal, setMeal] = useState(guest.meal ?? "");
+  const [hotel, setHotel] = useState(guest.hotel ?? "");
+  const [transport, setTransport] = useState(guest.transport ?? "");
+  const [pending, start] = useTransition();
+
+  function save() {
+    start(async () => {
+      const r = await updateGuestDetails(inviteId, guest.id, { group_name: group, meal, hotel, transport });
+      if (r?.error) onError(r.error);
+      else onClose();
+    });
+  }
+
+  return (
+    <tr style={{ background: "var(--paper-2)" }}>
+      <td colSpan={5} className="px-4 py-4">
+        <div className="grid gap-3 sm:grid-cols-4">
+          <div className="field">
+            <label htmlFor={`grp-${guest.id}`}>Group</label>
+            <input id={`grp-${guest.id}`} value={group} onChange={(e) => setGroup(e.target.value)} placeholder="Bride's family" />
+          </div>
+          <div className="field">
+            <label htmlFor={`meal-${guest.id}`}>Meal</label>
+            <select id={`meal-${guest.id}`} value={meal} onChange={(e) => setMeal(e.target.value)}>
+              <option value="">Not set</option>
+              <option value="veg">Veg</option>
+              <option value="non-veg">Non-veg</option>
+              <option value="vegan">Vegan</option>
+              <option value="jain">Jain</option>
+            </select>
+          </div>
+          <div className="field">
+            <label htmlFor={`hotel-${guest.id}`}>Hotel / room</label>
+            <input id={`hotel-${guest.id}`} value={hotel} onChange={(e) => setHotel(e.target.value)} placeholder="Hotel A, room 204" />
+          </div>
+          <div className="field">
+            <label htmlFor={`transport-${guest.id}`}>Transport</label>
+            <input id={`transport-${guest.id}`} value={transport} onChange={(e) => setTransport(e.target.value)} placeholder="Airport pickup 10:40" />
+          </div>
+        </div>
+        <div className="mt-3 flex gap-2">
+          <button type="button" className="btn-primary" disabled={pending} onClick={save}>
+            Save
+          </button>
+          <button type="button" className="btn-secondary" onClick={onClose}>
+            Cancel
+          </button>
+        </div>
+      </td>
+    </tr>
   );
 }

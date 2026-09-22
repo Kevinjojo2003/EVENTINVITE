@@ -1,12 +1,14 @@
 import Link from "next/link";
-import { Image as ImageIcon, MailQuestion, Megaphone, Users } from "lucide-react";
-import type { Guest, Invite, Rsvp, EventType } from "@/lib/types";
+import { Image as ImageIcon, ListChecks, MailQuestion, Megaphone, Users, Wallet } from "lucide-react";
+import type { Expense, Guest, Invite, Rsvp, EventType, Task } from "@/lib/types";
 import { displayTitle, normalizeConfig } from "@/lib/themes";
 import { inviteUrl, longDate } from "@/lib/format";
 
+const money = (n: number) => `₹${Math.round(n).toLocaleString("en-IN")}`;
+
 // The dashboard's "home screen": one event, how it is doing, and what to do about it. Adapted
 // from the design canvas's App-Home board to the existing web dashboard.
-export function HomeHero({ invite, guests, rsvps }: { invite: Invite; guests: Guest[]; rsvps: Rsvp[] }) {
+export function HomeHero({ invite, guests, rsvps, tasks, expenses }: { invite: Invite; guests: Guest[]; rsvps: Rsvp[]; tasks: Task[]; expenses: Expense[] }) {
   const c = normalizeConfig(invite.config, invite.event_type as EventType);
   const title = displayTitle(c) || "Your event";
 
@@ -15,6 +17,15 @@ export function HomeHero({ invite, guests, rsvps }: { invite: Invite; guests: Gu
   const unsent = guests.filter((g) => !g.sent_at).length;
   const unreplied = Math.max(0, guests.length - repliedCount);
   const pct = guests.length ? Math.round((repliedCount / guests.length) * 100) : 0;
+
+  const today = new Date().toISOString().slice(0, 10);
+  const weekOut = new Date(Date.now() + 7 * 86_400_000).toISOString().slice(0, 10);
+  const tasksDone = tasks.filter((t) => t.done).length;
+  const tasksOverdue = tasks.filter((t) => !t.done && t.due_date && t.due_date < today).length;
+  const tasksDueSoon = tasks.filter((t) => !t.done && t.due_date && t.due_date >= today && t.due_date <= weekOut).length;
+  const spent = expenses.reduce((s, e) => s + e.paid, 0);
+  const quotedSum = expenses.reduce((s, e) => s + e.quoted, 0);
+  const dueExpenses = expenses.filter((e) => e.quoted > e.paid).length;
 
   const days = (() => {
     if (!c.event.dateTime) return null;
@@ -31,6 +42,9 @@ export function HomeHero({ invite, guests, rsvps }: { invite: Invite; guests: Gu
     if (unreplied > 0) needs.push({ icon: MailQuestion, text: `${unreplied} guest${unreplied === 1 ? "" : "s"} have not replied`, note: "A reminder helps closer to the day", href: `/dashboard/${invite.id}/guests` });
   }
   if (!c.heroPhoto && c.photos.length === 0) needs.push({ icon: ImageIcon, text: "Add a photo or two", note: "It is the first thing WhatsApp shows", href: `/dashboard/${invite.id}` });
+  if (tasksOverdue > 0) needs.push({ icon: ListChecks, text: `${tasksOverdue} task${tasksOverdue === 1 ? "" : "s"} overdue`, note: "Clear these first, then the rest of the week", href: `/dashboard/${invite.id}/checklist` });
+  else if (tasksDueSoon > 0) needs.push({ icon: ListChecks, text: `${tasksDueSoon} task${tasksDueSoon === 1 ? "" : "s"} due this week`, note: "Stay ahead of the checklist", href: `/dashboard/${invite.id}/checklist` });
+  if (dueExpenses > 0) needs.push({ icon: Wallet, text: `${dueExpenses} vendor payment${dueExpenses === 1 ? "" : "s"} still due`, note: "Clear balances before the event", href: `/dashboard/${invite.id}/budget` });
 
   const r = 24;
   const circumference = 2 * Math.PI * r;
@@ -97,6 +111,22 @@ export function HomeHero({ invite, guests, rsvps }: { invite: Invite; guests: Gu
           </span>
         </div>
       </Link>
+
+      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {[
+          { label: "Guests replied", value: guests.length ? `${pct}%` : "—", href: `/dashboard/${invite.id}/guests` },
+          { label: "Tasks done", value: tasks.length ? `${tasksDone}/${tasks.length}` : "—", href: `/dashboard/${invite.id}/checklist` },
+          { label: "Spent", value: quotedSum || spent ? money(spent) : "—", href: `/dashboard/${invite.id}/budget` },
+          { label: "Budget left", value: quotedSum ? money(Math.max(0, quotedSum - spent)) : "—", href: `/dashboard/${invite.id}/budget` },
+        ].map((s) => (
+          <Link key={s.label} href={s.href} className="card p-3">
+            <p className="text-[11px] uppercase tracking-[0.1em]" style={{ color: "var(--ink-2)" }}>
+              {s.label}
+            </p>
+            <p className="mt-1 text-lg font-medium tabular-nums">{s.value}</p>
+          </Link>
+        ))}
+      </div>
 
       {needs.length > 0 && (
         <div className="mt-6">
