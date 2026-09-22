@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { InviteConfig } from "@/lib/types";
 import { BACKGROUNDS, FONT_PAIRS, displayTitle, fontsHref, sealText } from "@/lib/themes";
 import { language, fill } from "@/lib/i18n";
-import { calendarUrl, icsHref, dateParts as dateP, dayLabel, longDate, numericDate, shortDate, timeLabel, tzShort } from "@/lib/format";
+import { calendarUrl, formalDate, formalTime, icsHref, dateParts as dateP, dayLabel, longDate, numericDate, shortDate, timeLabel, tzShort } from "@/lib/format";
 import { createMusic, type MusicControl } from "./music";
 import { Fireflies } from "./Fireflies";
 import { Gate } from "./Gate";
@@ -320,7 +320,12 @@ export function Invitation({ config, slug, guest, preview }: Props) {
           {c.hosts.subline && <p className="rise rise-3 display text-[clamp(1.3rem,3vw,1.9rem)]">{c.hosts.subline}</p>}
           {c.event.headline && c.theme.titleStyle !== "stacked" && <p className="rise rise-3 dim max-w-md text-lg">{c.event.headline}</p>}
           <div className="rise rise-4 flex flex-col items-center gap-2">
-            {c.theme.dateStyle === "numeric" && c.event.dateTime ? (
+            {c.theme.dateStyle === "formal" && c.event.dateTime ? (
+              <div dir="ltr" className="grid max-w-md gap-1">
+                <p className="display text-[clamp(1.15rem,2.6vw,1.4rem)] leading-snug">{formalDate(c.event.dateTime, tz)}</p>
+                <p className="dim text-[clamp(0.95rem,2.2vw,1.1rem)] leading-snug">{formalTime(c.event.dateTime, tz)}</p>
+              </div>
+            ) : c.theme.dateStyle === "numeric" && c.event.dateTime ? (
               <p dir="ltr" className="display text-[clamp(1.6rem,4.4vw,2.6rem)] tracking-[0.08em]">{numericDate(c.event.dateTime, tz)}</p>
             ) : c.theme.dateStyle === "split" && dateParts ? (
               <div className="flex items-center gap-5" dir="ltr">

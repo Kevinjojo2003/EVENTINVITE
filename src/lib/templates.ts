@@ -27,7 +27,7 @@ export type Template = {
   bigAmpersand?: boolean;
   scene?: "none" | "moonlight" | "sunrise-journey" | "golden-hour" | "garden-day" | "ocean-dusk";
   background?: "flat" | "mist" | "blush" | "dusk" | "sage";
-  dateStyle?: "stacked" | "split" | "numeric";
+  dateStyle?: "stacked" | "split" | "numeric" | "formal";
   ornament: "none" | "floral" | "mandala" | "leaves" | "rings" | "paisley" | "garland" | "lanterns" | "arch" | "garden" | "wildflower";
   sample: {
     name1: string;
@@ -1451,6 +1451,94 @@ export const TEMPLATES: Template[] = [
     ornament: "none",
     sample: { name1: "Zubin", name2: "Dinaz", city: "Pune", venue: "Parsi Club Lawn", address: "Camp, Pune", story: "Two families, one long friendship.", date: "2027-03-06" },
   },
+  {
+    key: "garden-formal",
+    name: "Engraved garden",
+    blurb: "The wording of a printed wedding card: 'request the pleasure of your company', with the date and time spelled out in full.",
+    caption: "Church wedding · English",
+    group: "wedding",
+    type: "wedding",
+    tradition: "christian",
+    language: "en",
+    timezone: "Asia/Kolkata",
+    preset: "sage",
+    crest: "",
+    frame: false,
+    dateStyle: "formal",
+    ornament: "leaves",
+    sample: {
+      name1: "Clara",
+      name2: "Samuel",
+      eyebrow: "Together with their families",
+      city: "Fort Kochi",
+      venue: "St Francis Church",
+      address: "Fort Kochi, Kerala",
+      story: "We would love for you to be there as we begin this new chapter, surrounded by the people who mean the most to us.",
+      date: "2027-04-24",
+      tagline: "Together, always.",
+      signature: "With love, Clara & Samuel",
+    },
+  },
+  {
+    key: "kayal",
+    name: "Kayal",
+    blurb: "Teal and brass, named for the Kerala backwaters. For a Syrian Christian wedding, in Malayalam.",
+    caption: "Syrian Christian wedding · Malayalam",
+    group: "wedding",
+    type: "wedding",
+    tradition: "syrian-christian",
+    language: "ml",
+    timezone: "Asia/Kolkata",
+    preset: "lagoon",
+    crest: "ദൈവകൃപയാൽ",
+    frame: true,
+    ornament: "leaves",
+    sample: {
+      name1: "ആൻ മരിയ",
+      name2: "ജോർജ്",
+      nameTranslit: "Ann Maria & George",
+      dateTranslit: "Monday, 3 May 2027 · 11:00 am",
+      city: "Kumarakom",
+      venue: "St. Mary's Forona Church",
+      address: "Kumarakom, Kottayam",
+      story: "By the grace of God, and with the blessings of our families, we invite you to our wedding among the backwaters we grew up beside.",
+      date: "2027-05-03",
+      tagline: "Together, always.",
+      signature: "With love, Ann Maria & George",
+      scheduleTitles: ["മന്ത്രകോടി അനുഗ്രഹം", "വിശുദ്ധ വിവാഹം", "സ്വീകരണം"],
+      scheduleSubs: ["Manthrakodi blessing", "Holy Matrimony", "Reception"],
+    },
+  },
+  {
+    key: "palli",
+    name: "Palli",
+    blurb: "Emerald and gold under an arch, named for the mosque. A Mappila (Kerala Muslim) nikah, in Malayalam.",
+    caption: "Mappila nikah · Malayalam",
+    group: "wedding",
+    type: "wedding",
+    tradition: "muslim",
+    language: "ml",
+    timezone: "Asia/Kolkata",
+    preset: "emerald",
+    crest: "ബിസ്മില്ലാഹിർ റഹ്മാനിർ റഹീം",
+    frame: true,
+    ornament: "arch",
+    sample: {
+      name1: "ഫാത്തിമ നസ്രിൻ",
+      name2: "മുഹമ്മദ് ഷാഫി",
+      nameTranslit: "Fathima Nasrin & Muhammed Shafi",
+      dateTranslit: "Sunday, 27 December 2026 · 12:00 pm",
+      city: "Kozhikode",
+      venue: "Community Hall",
+      address: "Kozhikode, Kerala",
+      story: "അല്ലാഹുവിന്റെ അനുഗ്രഹത്തോടെ, ഞങ്ങളുടെ നിക്കാഹിൽ പങ്കുചേരാൻ സ്നേഹപൂർവ്വം ക്ഷണിക്കുന്നു.",
+      date: "2026-12-27",
+      tagline: "എന്നെന്നും ഒരുമിച്ച്.",
+      signature: "സ്നേഹത്തോടെ, ഫാത്തിമ നസ്രിനും മുഹമ്മദ് ഷാഫിയും",
+      scheduleTitles: ["മെഹന്തി", "നിക്കാഹ്", "വലീമ"],
+      scheduleSubs: ["Mehndi", "Nikah", "Walima"],
+    },
+  },
 ];
 
 export const templateByKey = (key: string) => TEMPLATES.find((t) => t.key === key);
@@ -1532,6 +1620,10 @@ export function sampleFromTemplate(t: Template): InviteConfig {
   if (t.key === "church") {
     cfg.texts.verse = "Love is patient, love is kind. It always protects, always trusts, always hopes, always perseveres. Love never fails.";
     cfg.texts.verseSource = "1 Corinthians 13:4-8";
+  }
+  if (t.key === "garden-formal") {
+    // The wording of a printed engraved invitation, in place of the usual casual headline.
+    cfg.event.headline = "request the pleasure of your company at the celebration of their marriage";
   }
   if (t.type === "wedding" || t.type === "engagement") {
     cfg.extras.chapters = [

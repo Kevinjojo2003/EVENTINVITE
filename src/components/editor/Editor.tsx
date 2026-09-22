@@ -882,6 +882,7 @@ export function Editor({ invite }: { invite: Invite }) {
                   <option value="stacked">One line: Saturday, 6 March 2027</option>
                   <option value="split">Split: 17 | Saturday / February 2027</option>
                   <option value="numeric">Numbers: 26 - 08 - 2027</option>
+                  <option value="formal">Engraved card: Saturday, the twenty-fourth of April, two thousand and twenty-seven</option>
                 </select>
               </Field>
               <Field label="Ornament" hint="A drawn motif above the names, matching dividers, and flourishes on the frame corners.">

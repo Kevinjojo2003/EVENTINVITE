@@ -118,7 +118,7 @@ export type InviteConfig = {
     photo: "none" | "blue-gold" | "green-leaves" | "pink-roses" | "white-paper" | "botanical-paper"; // a photograph behind the page
     scene: "none" | "moonlight" | "sunrise-journey" | "golden-hour" | "garden-day" | "ocean-dusk"; // animated sky behind the page
     background: "flat" | "mist" | "blush" | "dusk" | "sage"; // painted gradient behind the whole page
-    dateStyle: "stacked" | "split" | "numeric"; // one line, "17 | SATURDAY / AUGUST 2027" split by a rule, or "26 - 08 - 2027"
+    dateStyle: "stacked" | "split" | "numeric" | "formal"; // one line, "17 | SATURDAY / AUGUST 2027" split by a rule, "26 - 08 - 2027", or a spelled-out engraved-card date
     titleStyle: "default" | "stacked"; // "YOU ARE INVITED TO THE / WEDDING / of" above the names
     frame: boolean; // thin inset border around the page, like a printed card
     ornament: "none" | "floral" | "mandala" | "leaves" | "rings" | "paisley" | "garland" | "lanterns" | "arch" | "garden" | "wildflower"; // drawn motif above the names, dividers and frame corners
