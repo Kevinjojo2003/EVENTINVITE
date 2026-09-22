@@ -144,11 +144,18 @@ export async function seedChecklist(inviteId: string) {
   return { ok: true, count: rows.length };
 }
 
-export async function addTask(inviteId: string, input: { title: string; category?: string; due_date?: string | null }) {
+export async function addTask(inviteId: string, input: { title: string; category?: string; due_date?: string | null; assignee?: string; priority?: string }) {
   const { supabase } = await me();
   const title = input.title.trim().slice(0, 160);
   if (!title) return { error: "Give the task a name." };
-  const { error } = await supabase.from("tasks").insert({ invite_id: inviteId, title, category: input.category?.trim().slice(0, 60) || "General", due_date: input.due_date || null });
+  const { error } = await supabase.from("tasks").insert({
+    invite_id: inviteId,
+    title,
+    category: input.category?.trim().slice(0, 60) || "General",
+    due_date: input.due_date || null,
+    assignee: input.assignee?.trim().slice(0, 80) || null,
+    priority: input.priority || "medium",
+  });
   if (error) return { error: needsMigration(error) };
   revalidatePath(`/dashboard/${inviteId}/checklist`);
   revalidatePath("/dashboard");
@@ -161,6 +168,20 @@ export async function setTaskDone(inviteId: string, taskId: string, done: boolea
   if (error) return { error: needsMigration(error) };
   revalidatePath(`/dashboard/${inviteId}/checklist`);
   revalidatePath("/dashboard");
+  return { ok: true };
+}
+
+export async function updateTask(inviteId: string, taskId: string, fields: Partial<{ title: string; category: string; due_date: string | null; assignee: string; priority: string }>) {
+  const { supabase } = await me();
+  const clean: Record<string, unknown> = {};
+  if (fields.title !== undefined) clean.title = fields.title.trim().slice(0, 160);
+  if (fields.category !== undefined) clean.category = fields.category.trim().slice(0, 60) || "General";
+  if (fields.due_date !== undefined) clean.due_date = fields.due_date || null;
+  if (fields.assignee !== undefined) clean.assignee = fields.assignee.trim().slice(0, 80) || null;
+  if (fields.priority !== undefined) clean.priority = fields.priority;
+  const { error } = await supabase.from("tasks").update(clean).eq("id", taskId).eq("invite_id", inviteId);
+  if (error) return { error: needsMigration(error) };
+  revalidatePath(`/dashboard/${inviteId}/checklist`);
   return { ok: true };
 }
 
@@ -266,15 +287,52 @@ export async function deleteVendor(inviteId: string, vendorId: string) {
 }
 
 // ---------- timeline ----------
-export async function addTimelineItem(inviteId: string, input: { title: string; starts_at?: string | null; note?: string }) {
+export async function addTimelineItem(inviteId: string, input: { title: string; starts_at?: string | null; note?: string; location?: string; assignee?: string; vendor?: string }) {
   const { supabase } = await me();
   const title = input.title.trim().slice(0, 160);
   if (!title) return { error: "Give the moment a name." };
   const { count } = await supabase.from("timeline_items").select("id", { count: "exact", head: true }).eq("invite_id", inviteId);
-  const { error } = await supabase.from("timeline_items").insert({ invite_id: inviteId, title, starts_at: input.starts_at || null, note: input.note?.trim().slice(0, 300) || null, sort_order: count ?? 0 });
+  const { error } = await supabase.from("timeline_items").insert({
+    invite_id: inviteId,
+    title,
+    starts_at: input.starts_at || null,
+    note: input.note?.trim().slice(0, 300) || null,
+    location: input.location?.trim().slice(0, 160) || null,
+    assignee: input.assignee?.trim().slice(0, 80) || null,
+    vendor: input.vendor?.trim().slice(0, 120) || null,
+    sort_order: count ?? 0,
+  });
   if (error) return { error: needsMigration(error) };
   revalidatePath(`/dashboard/${inviteId}/timeline`);
   revalidatePath(`/dashboard/${inviteId}/day`);
+  return { ok: true };
+}
+
+export async function updateTimelineItem(
+  inviteId: string,
+  itemId: string,
+  fields: Partial<{ title: string; starts_at: string | null; note: string; location: string; assignee: string; vendor: string; show_on_website: boolean }>,
+) {
+  const { supabase } = await me();
+  const clean: Record<string, unknown> = {};
+  if (fields.title !== undefined) clean.title = fields.title.trim().slice(0, 160);
+  if (fields.starts_at !== undefined) clean.starts_at = fields.starts_at || null;
+  if (fields.note !== undefined) clean.note = fields.note.trim().slice(0, 300) || null;
+  if (fields.location !== undefined) clean.location = fields.location.trim().slice(0, 160) || null;
+  if (fields.assignee !== undefined) clean.assignee = fields.assignee.trim().slice(0, 80) || null;
+  if (fields.vendor !== undefined) clean.vendor = fields.vendor.trim().slice(0, 120) || null;
+  if (fields.show_on_website !== undefined) clean.show_on_website = fields.show_on_website;
+  const { error } = await supabase.from("timeline_items").update(clean).eq("id", itemId).eq("invite_id", inviteId);
+  if (error) return { error: needsMigration(error) };
+  revalidatePath(`/dashboard/${inviteId}/timeline`);
+  revalidatePath(`/dashboard/${inviteId}/day`);
+  return { ok: true };
+}
+
+export async function reorderTimelineItems(inviteId: string, orderedIds: string[]) {
+  const { supabase } = await me();
+  await Promise.all(orderedIds.map((id, i) => supabase.from("timeline_items").update({ sort_order: i }).eq("id", id).eq("invite_id", inviteId)));
+  revalidatePath(`/dashboard/${inviteId}/timeline`);
   return { ok: true };
 }
 
@@ -381,6 +439,15 @@ export async function setCheckedIn(inviteId: string, rsvpId: string, checked: bo
   const { error } = await supabase.from("rsvps").update({ checked_in_at: checked ? new Date().toISOString() : null }).eq("id", rsvpId).eq("invite_id", inviteId);
   if (error) return { error: needsMigration(error) };
   revalidatePath(`/dashboard/${inviteId}/day`);
+  return { ok: true };
+}
+
+// ---------- plan notes ----------
+export async function saveNote(inviteId: string, body: string) {
+  const { supabase } = await me();
+  const { error } = await supabase.from("event_notes").upsert({ invite_id: inviteId, body: body.slice(0, 20000), updated_at: new Date().toISOString() });
+  if (error) return { error: needsMigration(error) };
+  revalidatePath(`/dashboard/${inviteId}/notes`);
   return { ok: true };
 }
 

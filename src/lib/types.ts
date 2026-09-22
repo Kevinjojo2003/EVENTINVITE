@@ -197,8 +197,12 @@ export type Task = {
   category: string;
   due_date: string | null; // YYYY-MM-DD
   done: boolean;
+  assignee: string | null;
+  priority: "low" | "medium" | "high";
   created_at: string;
 };
+
+export type EventNote = { invite_id: string; body: string; updated_at: string };
 
 export type Expense = {
   id: string;
@@ -247,6 +251,10 @@ export type TimelineItem = {
   starts_at: string | null;
   note: string | null;
   sort_order: number;
+  location: string | null;
+  assignee: string | null;
+  vendor: string | null;
+  show_on_website: boolean;
   created_at: string;
 };
 
