@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Image as ImageIcon, ListChecks, MailQuestion, Megaphone, Users, Wallet } from "lucide-react";
+import { Image as ImageIcon, ListChecks, MailQuestion, Megaphone, Radio, Users, Wallet } from "lucide-react";
 import type { Expense, Guest, Invite, Rsvp, EventType, Task } from "@/lib/types";
 import { displayTitle, normalizeConfig } from "@/lib/themes";
 import { inviteUrl, longDate } from "@/lib/format";
@@ -59,6 +59,17 @@ export function HomeHero({ invite, guests, rsvps, tasks, expenses }: { invite: I
       <h1 id="home-hero-title" className="mt-1 text-3xl font-medium">
         {title}
       </h1>
+
+      {days !== null && days >= 0 && days <= 1 && (
+        <Link
+          href={`/dashboard/${invite.id}/day`}
+          className="mt-4 flex items-center gap-3 rounded-2xl px-4 py-3"
+          style={{ background: "#2a1414", color: "#fbe7e7" }}
+        >
+          <Radio size={18} aria-hidden="true" />
+          <span className="text-sm font-medium">{days === 0 ? "It's today — open Event Day mode" : "Tomorrow — check Event Day mode is ready"}</span>
+        </Link>
+      )}
 
       <Link href={`/dashboard/${invite.id}`} className="card mt-5 block overflow-hidden" style={{ boxShadow: "0 26px 54px -34px rgba(14,37,33,.35)" }}>
         <div

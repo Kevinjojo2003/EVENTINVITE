@@ -214,6 +214,92 @@ export const EXPENSE_CATEGORIES = [
   "Makeup", "Invitations", "Transport", "Accommodation", "Entertainment", "Gifts", "Miscellaneous",
 ] as const;
 
+export type Vendor = {
+  id: string;
+  invite_id: string;
+  category: string;
+  name: string;
+  contact_name: string | null;
+  contact_phone: string | null;
+  contact_email: string | null;
+  quoted: number;
+  paid: number;
+  status: "Shortlisted" | "Contacted" | "Negotiating" | "Confirmed" | "Completed";
+  arrived: boolean;
+  note: string | null;
+  created_at: string;
+};
+
+export const VENDOR_CATEGORIES = [
+  "Venue", "Caterer", "Photographer", "Videographer", "Decorator", "Makeup artist", "DJ",
+  "Transportation", "Florist", "Invitation designer", "Hotel", "Other",
+] as const;
+
+export const VENDOR_STATUSES = ["Shortlisted", "Contacted", "Negotiating", "Confirmed", "Completed"] as const;
+
+export type TimelineItem = {
+  id: string;
+  invite_id: string;
+  title: string;
+  starts_at: string | null;
+  note: string | null;
+  sort_order: number;
+  created_at: string;
+};
+
+export type Accommodation = {
+  id: string;
+  invite_id: string;
+  hotel_name: string;
+  rooms_booked: number;
+  guests_count: number;
+  check_in: string | null;
+  check_out: string | null;
+  payment_status: "Pending" | "Partial" | "Paid";
+  note: string | null;
+  created_at: string;
+};
+
+export type TransportItem = {
+  id: string;
+  invite_id: string;
+  title: string;
+  mode: string;
+  details: string | null;
+  guests_count: number;
+  time_note: string | null;
+  created_at: string;
+};
+
+export type EventDocument = {
+  id: string;
+  invite_id: string;
+  title: string;
+  category: string;
+  file_url: string; // storage path in the private "documents" bucket, not a public URL
+  file_name: string;
+  created_at: string;
+};
+
+export const DOCUMENT_CATEGORIES = ["Venue Contract", "Vendor Agreement", "Invoice", "Guest List", "Booking", "Other"] as const;
+
+export type EventTeamMember = {
+  id: string;
+  invite_id: string;
+  email: string;
+  role: "planner" | "family" | "finance" | "vendor";
+  accepted_user_id: string | null;
+  invited_at: string;
+  accepted_at: string | null;
+};
+
+export const TEAM_ROLES: Record<EventTeamMember["role"], { label: string; blurb: string }> = {
+  planner: { label: "Planner", blurb: "Tasks, vendors and the timeline" },
+  family: { label: "Family", blurb: "Guests and the schedule" },
+  finance: { label: "Finance", blurb: "Budget and payments" },
+  vendor: { label: "Vendor", blurb: "Only what's shared with them" },
+};
+
 export const CHECKLIST_DEFAULTS: { phase: string; items: string[] }[] = [
   { phase: "6 months before", items: ["Book venue", "Set the budget", "Finalise guest list", "Book photographer", "Book caterer", "Book decorator"] },
   { phase: "3 months before", items: ["Send invitations", "Finalise outfits", "Book accommodation", "Finalise menu"] },
