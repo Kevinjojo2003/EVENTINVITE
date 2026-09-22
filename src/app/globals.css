@@ -59,16 +59,16 @@ body {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
-  font-family: "Hanken Grotesk", "Helvetica Neue", Arial, sans-serif;
+  font-family: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 html { scroll-behavior: smooth; scroll-padding-top: 88px; }
 
 /* shared pieces, prefixed m- */
-.m-dis { font-family: "Newsreader", "Iowan Old Style", Georgia, serif; font-weight: 400; letter-spacing: -0.015em; font-optical-sizing: auto; }
+.m-dis { font-family: "Instrument Serif", "Iowan Old Style", Georgia, serif; font-weight: 400; letter-spacing: -0.015em; }
 .m-dis em, .m-em { font-style: italic; color: var(--pink); background: var(--grad-text); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; padding-right: 0.06em; }
-.m-hand { font-family: "Newsreader", Georgia, serif; font-style: italic; }
+.m-hand { font-family: "Instrument Serif", Georgia, serif; font-style: italic; }
 .m-eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold-ink); }
 .m-grain { background-image: radial-gradient(rgba(31, 26, 23, 0.045) 1px, transparent 1px); background-size: 5px 5px; }
 .m-btn {

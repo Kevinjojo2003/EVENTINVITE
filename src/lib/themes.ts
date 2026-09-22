@@ -372,7 +372,9 @@ export function defaultConfig(type: EventType, name1 = "", name2 = "", opts: Con
     photos: [],
     heroPhoto: "",
     credits,
-    rsvp: { mode: "both", whatsapp: "", email: "", deadline: "", tickets: t.tickets, askCompany: t.askCompany, maxParty: t.maxParty, askChildren: t.maxParty > 1 },
+    // Default to a plain yes/no plus a single headcount. The adults/children/infants
+    // breakdown is opt-in from the RSVP tab — most guests won't fill in more than that.
+    rsvp: { mode: "both", whatsapp: "", email: "", deadline: "", tickets: t.tickets, askCompany: t.askCompany, maxParty: t.maxParty, askChildren: false },
     theme: { preset: t.preset, colors: preset.colors, fonts: preset.fonts, fireflies: preset.fireflies, frame: false, ornament: "none", background: "flat", dateStyle: "stacked", titleStyle: "default", scene: "none", photo: "none", watercolor: "none", bigAmpersand: false, layout: "invitation" },
     music: { source: "synth", url: "", youtubeId: "", youtubeStart: 0, credit: "" },
     texts: { eyebrow: trad?.eyebrow ?? t.eyebrow, footerNote: "", sealText: "", crest: "", titleLead: "", title: "", titleJoin: "", verse: "", verseSource: "", dateTranslit: "", tagline: "", signature: "" },
