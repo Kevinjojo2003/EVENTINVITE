@@ -21,6 +21,7 @@ export type ScheduleItem = {
   place: string;
   dress: string;
   note: string;
+  titleSub?: string; // a translation or transliteration of the title, shown small underneath
   dressColors?: string[]; // hex swatches shown beside the dress code
   kids?: "welcome" | "adults"; // are children invited
   dry?: boolean; // no alcohol
@@ -69,6 +70,7 @@ export type InviteConfig = {
     name1: string; // the couple's first name, the birthday person, the family, the company
     name2: string; // second partner (weddings/engagements) or empty
     subline: string; // "turns thirty" · "are moving in" · "Annual partner summit"
+    nameTranslit: string; // a translation or transliteration of the names, shown small under the big display names
   };
   event: {
     type: EventType;
@@ -138,6 +140,9 @@ export type InviteConfig = {
     titleJoin: string; // "of"
     verse: string; // an opening verse or blessing, shown above everything
     verseSource: string; // "1 Corinthians 13:4-8", "Rumi"...
+    dateTranslit: string; // a translation of the date line, shown small underneath (for a script guests may not read)
+    tagline: string; // a short closing line after the photos, before RSVP: "Together, always."
+    signature: string; // "With love, Anna & Joseph", shown after the gifts section
   };
   extras: {
     announcement: string; // live update banner at the top, e.g. "Muhurat moved to 10:30"

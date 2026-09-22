@@ -40,6 +40,12 @@ export type Template = {
     story: string;
     date: string; // yyyy-mm-dd
     tickets?: boolean;
+    nameTranslit?: string; // a romanized/translated version of the names, shown small under the big display names
+    dateTranslit?: string; // a translated date line, shown small under the localized date
+    tagline?: string; // a short closing line after the photos, before RSVP
+    signature?: string; // "With love, Anna & Joseph"
+    scheduleTitles?: string[]; // overrides each ceremony's title with the native script, matched by index
+    scheduleSubs?: string[]; // a translated title per ceremony, shown small underneath, matched by index
   };
 };
 
@@ -58,7 +64,19 @@ export const TEMPLATES: Template[] = [
     crest: "",
     frame: true,
     ornament: "garland",
-    sample: { name1: "ലക്ഷ്മി", name2: "അരുൺ", city: "Kochi", venue: "Bolgatty Palace", address: "Mulavukad, Kochi", story: "We met at a friend's wedding and have been talking ever since.", date: "2027-01-14" },
+    sample: {
+      name1: "ലക്ഷ്മി",
+      name2: "അരുൺ",
+      nameTranslit: "Lakshmi & Arun",
+      dateTranslit: "Thursday, 14 January 2027",
+      city: "Kochi",
+      venue: "Bolgatty Palace",
+      address: "Mulavukad, Kochi",
+      story: "We met at a friend's wedding and have been talking ever since.",
+      date: "2027-01-14",
+      tagline: "Together, always.",
+      signature: "With love, Lakshmi & Arun",
+    },
   },
   {
     key: "garden-mandap",
@@ -109,7 +127,21 @@ export const TEMPLATES: Template[] = [
     crest: "بسم الله",
     frame: true,
     ornament: "arch",
-    sample: { name1: "آمنة", name2: "يوسف", city: "Dubai", venue: "Al Habtoor Palace", address: "Business Bay, Dubai", story: "بارك الله لكما وبارك عليكما وجمع بينكما في خير.", date: "2027-03-06" },
+    sample: {
+      name1: "آمنة",
+      name2: "يوسف",
+      nameTranslit: "Amina & Yusuf",
+      dateTranslit: "Saturday, 6 March 2027 · 6:00 pm",
+      city: "Dubai",
+      venue: "Al Habtoor Palace",
+      address: "Business Bay, Dubai",
+      story: "بارك الله لكما وبارك عليكما وجمع بينكما في خير.",
+      date: "2027-03-06",
+      tagline: "معاً، دائماً.",
+      signature: "بكل الحب، آمنة ويوسف",
+      scheduleTitles: ["مهندي", "نكاح", "وليمة"],
+      scheduleSubs: ["Mehndi", "Nikah", "Walima"],
+    },
   },
   {
     key: "church",
@@ -125,7 +157,17 @@ export const TEMPLATES: Template[] = [
     crest: "✝",
     frame: true,
     ornament: "leaves",
-    sample: { name1: "Anna", name2: "Joseph", city: "Kottayam", venue: "St. Mary's Church", address: "Kanjikuzhy, Kottayam", story: "Two families, one long friendship, and a wedding we are thrilled to share with you.", date: "2027-02-20" },
+    sample: {
+      name1: "Anna",
+      name2: "Joseph",
+      city: "Kottayam",
+      venue: "St. Mary's Church",
+      address: "Kanjikuzhy, Kottayam",
+      story: "Two families, one long friendship, and a wedding we are thrilled to share with you.",
+      date: "2027-02-20",
+      tagline: "Together, always.",
+      signature: "With love, Anna & Joseph",
+    },
   },
   {
     key: "anand-karaj",
@@ -141,7 +183,21 @@ export const TEMPLATES: Template[] = [
     crest: "ੴ",
     frame: true,
     ornament: "paisley",
-    sample: { name1: "ਸਿਮਰਨ", name2: "ਹਰਜੀਤ", city: "Amritsar", venue: "Gurdwara Sahib", address: "Model Town, Amritsar", story: "With the blessings of Waheguru and our families, we begin our life together.", date: "2026-12-12" },
+    sample: {
+      name1: "ਸਿਮਰਨ",
+      name2: "ਹਰਜੀਤ",
+      nameTranslit: "Simran & Harjit",
+      dateTranslit: "Saturday, 12 December 2026 · 9:00 am",
+      city: "Amritsar",
+      venue: "Gurdwara Sahib",
+      address: "Model Town, Amritsar",
+      story: "With the blessings of Waheguru and our families, we begin our life together.",
+      date: "2026-12-12",
+      tagline: "ਇਕੱਠੇ, ਹਮੇਸ਼ਾ।",
+      signature: "ਪਿਆਰ ਸਹਿਤ, ਸਿਮਰਨ ਤੇ ਹਰਜੀਤ",
+      scheduleTitles: ["ਕੁੜਮਾਈ", "ਮਹਿੰਦੀ ਤੇ ਸੰਗੀਤ", "ਅਨੰਦ ਕਾਰਜ", "ਰਿਸੈਪਸ਼ਨ"],
+      scheduleSubs: ["Kurmai", "Mehndi & Sangeet", "Anand Karaj", "Reception"],
+    },
   },
   {
     key: "tamil-wedding",
@@ -205,7 +261,21 @@ export const TEMPLATES: Template[] = [
     crest: "गृह प्रवेश",
     frame: true,
     ornament: "lanterns",
-    sample: { name1: "प्रिया और रोहन", name2: "", city: "Pune", venue: "Our new home", address: "Baner, Pune", story: "हमारे नए घर में आपका स्वागत है।", date: "2027-01-03" },
+    sample: {
+      name1: "प्रिया और रोहन",
+      name2: "",
+      nameTranslit: "Priya & Rohan",
+      dateTranslit: "Sunday, 3 January 2027 · 10:00 am",
+      city: "Pune",
+      venue: "Our new home",
+      address: "Baner, Pune",
+      story: "हमारे नए घर में आपका स्वागत है।",
+      date: "2027-01-03",
+      tagline: "हमारा पहला घर।",
+      signature: "सप्रेम, प्रिया और रोहन",
+      scheduleTitles: ["गृह प्रवेशम्", "भोजन"],
+      scheduleSubs: ["Griha Pravesham", "Lunch"],
+    },
   },
   {
     key: "birthday",
@@ -221,7 +291,18 @@ export const TEMPLATES: Template[] = [
     crest: "✦",
     frame: false,
     ornament: "lanterns",
-    sample: { name1: "Kiaan", name2: "", subline: "turns one", city: "Kochi", venue: "The Garden Room", address: "Panampilly Nagar, Kochi", story: "Cake, balloons and a lot of clapping. Come and be part of it.", date: "2026-11-08" },
+    sample: {
+      name1: "Kiaan",
+      name2: "",
+      subline: "turns one",
+      city: "Kochi",
+      venue: "The Garden Room",
+      address: "Panampilly Nagar, Kochi",
+      story: "Cake, balloons and a lot of clapping. Come and be part of it.",
+      date: "2026-11-08",
+      tagline: "One whole year of him.",
+      signature: "Love, Meera & Thomas",
+    },
   },
   {
     key: "partners-dinner",
@@ -1416,10 +1497,14 @@ export function sampleFromTemplate(t: Template): InviteConfig {
   const s = t.sample;
   const cfg = starterFromTemplate(t, s.name1, s.name2);
   cfg.hosts.subline = s.subline ?? "";
+  cfg.hosts.nameTranslit = s.nameTranslit ?? "";
+  cfg.texts.dateTranslit = s.dateTranslit ?? "";
+  cfg.texts.tagline = s.tagline ?? "";
+  cfg.texts.signature = s.signature ?? "";
   if (s.eyebrow) cfg.texts.eyebrow = s.eyebrow;
   cfg.event.city = s.city;
   const times = slots(cfg.schedule.length, s.date, t.timezone);
-  cfg.schedule = cfg.schedule.map((e, i) => ({ ...e, ...times[i], place: e.place || s.venue }));
+  cfg.schedule = cfg.schedule.map((e, i) => ({ ...e, ...times[i], title: s.scheduleTitles?.[i] ?? e.title, place: e.place || s.venue, titleSub: s.scheduleSubs?.[i] }));
   const main = cfg.schedule[Math.min(1, cfg.schedule.length - 1)];
   cfg.event.dateTime = main?.start ?? "";
   cfg.venue = { ...cfg.venue, name: s.venue, line1: s.address, line2: s.city, mapsUrl: `https://maps.google.com/?q=${encodeURIComponent(`${s.venue} ${s.city}`)}` };

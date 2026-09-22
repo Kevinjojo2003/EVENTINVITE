@@ -365,6 +365,9 @@ export function Editor({ invite }: { invite: Invite }) {
                   </Field>
                 )}
               </div>
+              <Field label="Names, translated" hint="A romanized or translated version shown small under the names, for guests who don't read the script — e.g. AMINA & YUSUF under آمنة و يوسف">
+                <input value={config.hosts.nameTranslit} onChange={(e) => patch((c) => ({ ...c, hosts: { ...c.hosts, nameTranslit: e.target.value } }))} placeholder="Optional" />
+              </Field>
               <Field label="Subline" hint={config.event.type === "birthday" ? "e.g. turns thirty" : config.event.type === "corporate" ? "e.g. Annual Partner Summit 2026" : "Optional line under the names"}>
                 <input value={config.hosts.subline} onChange={(e) => patch((c) => ({ ...c, hosts: { ...c.hosts, subline: e.target.value } }))} />
               </Field>
@@ -387,6 +390,9 @@ export function Editor({ invite }: { invite: Invite }) {
                   </datalist>
                 </Field>
               </div>
+              <Field label="Date, translated" hint="A translation of the date shown small underneath, e.g. 'Saturday, 6 March 2027' under an Arabic date">
+                <input value={config.texts.dateTranslit} onChange={(e) => patch((c) => ({ ...c, texts: { ...c.texts, dateTranslit: e.target.value } }))} placeholder="Optional" />
+              </Field>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="City">
                   <input value={config.event.city} onChange={(e) => patch((c) => ({ ...c, event: { ...c.event, city: e.target.value } }))} />
@@ -484,6 +490,9 @@ export function Editor({ invite }: { invite: Invite }) {
                       <button type="button" className="btn-secondary" onClick={() => patch((c) => ({ ...c, schedule: c.schedule.filter((_, j) => j !== i) }))}>×</button>
                     </div>
                   </div>
+                  <Field label="Title, translated" hint="Shown small under the ceremony name, e.g. 'Anand Karaj' under ਅਨੰਦ ਕਾਰਜ">
+                    <input value={e.titleSub ?? ""} onChange={(ev) => setSchedule(i, "titleSub", ev.target.value)} placeholder="Optional" />
+                  </Field>
                   <div className="grid gap-3 sm:grid-cols-2">
                     <Field label="Starts">
                       <input type="datetime-local" value={toLocalInput(e.start)} onChange={(ev) => setSchedule(i, "start", fromLocalInput(ev.target.value, tz))} />
@@ -1230,6 +1239,14 @@ export function Editor({ invite }: { invite: Invite }) {
               <button type="button" className="btn-secondary w-fit" onClick={() => patch((c) => ({ ...c, extras: { ...c.extras, party: [...c.extras.party, { name: "", role: "", note: "", photo: "" }] } }))}>
                 Add a person
               </button>
+
+              <p className="mt-2 text-sm font-medium">Closing lines</p>
+              <Field label="Tagline" hint="A short line shown after the photos, before RSVP, e.g. 'Together, always.'">
+                <input value={config.texts.tagline} onChange={(e) => patch((c) => ({ ...c, texts: { ...c.texts, tagline: e.target.value } }))} placeholder="Optional" />
+              </Field>
+              <Field label="Signature" hint="Shown near the very end, e.g. 'With love, Anna & Joseph'">
+                <input value={config.texts.signature} onChange={(e) => patch((c) => ({ ...c, texts: { ...c.texts, signature: e.target.value } }))} placeholder="Optional" />
+              </Field>
 
               <Field label="Hashtag" hint="Shown under the date">
                 <input value={config.extras.hashtag} onChange={(e) => patch((c) => ({ ...c, extras: { ...c.extras, hashtag: e.target.value } }))} placeholder="#MeeraWedsArjun" />

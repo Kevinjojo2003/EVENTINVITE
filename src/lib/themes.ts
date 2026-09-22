@@ -362,7 +362,7 @@ export function defaultConfig(type: EventType, name1 = "", name2 = "", opts: Con
   const schedule = (trad?.schedule ?? t.schedule).map((s) => ({ key: s.key, title: s.title, start: "", end: "", place: "", dress: "", note: s.note ?? "" }));
   const credits = (trad?.credits ?? t.credits).map((c) => ({ ...c }));
   return {
-    hosts: { name1, name2, subline: "" },
+    hosts: { name1, name2, subline: "", nameTranslit: "" },
     event: { type, tradition: trad?.key ?? "", language, timezone, headline: trad?.headline ?? t.headline, dateTime: "", city: "" },
     labels: labelsFor(language),
     venue: { name: "", line1: "", line2: "", mapsUrl: "", directions: "", stay: "", embedMap: true },
@@ -375,7 +375,7 @@ export function defaultConfig(type: EventType, name1 = "", name2 = "", opts: Con
     rsvp: { mode: "both", whatsapp: "", email: "", deadline: "", tickets: t.tickets, askCompany: t.askCompany, maxParty: t.maxParty, askChildren: t.maxParty > 1 },
     theme: { preset: t.preset, colors: preset.colors, fonts: preset.fonts, fireflies: preset.fireflies, frame: false, ornament: "none", background: "flat", dateStyle: "stacked", titleStyle: "default", scene: "none", photo: "none", watercolor: "none", bigAmpersand: false, layout: "invitation" },
     music: { source: "synth", url: "", youtubeId: "", youtubeStart: 0, credit: "" },
-    texts: { eyebrow: trad?.eyebrow ?? t.eyebrow, footerNote: "", sealText: "", crest: "", titleLead: "", title: "", titleJoin: "", verse: "", verseSource: "" },
+    texts: { eyebrow: trad?.eyebrow ?? t.eyebrow, footerNote: "", sealText: "", crest: "", titleLead: "", title: "", titleJoin: "", verse: "", verseSource: "", dateTranslit: "", tagline: "", signature: "" },
     extras: {
       announcement: "",
       livestream: { url: "", label: "Watch live" },

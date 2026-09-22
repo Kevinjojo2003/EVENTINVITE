@@ -312,6 +312,11 @@ export function Invitation({ config, slug, guest, preview }: Props) {
               c.hosts.name1 || "Your name"
             )}
           </h1>
+          {c.hosts.nameTranslit.trim() && (
+            <p dir="ltr" className="rise dim text-[0.72rem] uppercase tracking-[0.28em]" style={{ marginTop: "-0.3rem" }}>
+              {c.hosts.nameTranslit}
+            </p>
+          )}
           {c.hosts.subline && <p className="rise rise-3 display text-[clamp(1.3rem,3vw,1.9rem)]">{c.hosts.subline}</p>}
           {c.event.headline && c.theme.titleStyle !== "stacked" && <p className="rise rise-3 dim max-w-md text-lg">{c.event.headline}</p>}
           <div className="rise rise-4 flex flex-col items-center gap-2">
@@ -328,6 +333,11 @@ export function Invitation({ config, slug, guest, preview }: Props) {
               </div>
             ) : (
               dateLong && <p className="display text-[clamp(1.2rem,3vw,1.6rem)]">{dateLong}</p>
+            )}
+            {c.texts.dateTranslit.trim() && (
+              <p dir="ltr" className="dim text-[0.7rem] uppercase tracking-[0.22em]">
+                {c.texts.dateTranslit}
+              </p>
             )}
             {(c.venue.name || c.event.city) && (
               <p className="accent text-sm uppercase tracking-[0.22em]">{[c.venue.name, c.event.city].filter(Boolean).join(" · ")}</p>
@@ -399,6 +409,11 @@ export function Invitation({ config, slug, guest, preview }: Props) {
                       );
                     })()}
                     <h3 className="display text-[clamp(1.6rem,3vw,2.1rem)] leading-tight">{e.title}</h3>
+                    {e.titleSub && (
+                      <p dir="ltr" className="dim text-[0.68rem] uppercase tracking-[0.2em]">
+                        {e.titleSub}
+                      </p>
+                    )}
                     <p className="eyebrow">{dayLabel(e.start, tz, loc) || " "}</p>
                     {e.start && (
                       <p className="tnum text-sm">
@@ -701,6 +716,13 @@ export function Invitation({ config, slug, guest, preview }: Props) {
           </div>
         )}
 
+        {/* Tagline */}
+        {c.texts.tagline.trim() && (
+          <Section id="tagline" className="pb-24 text-center">
+            <p className="display text-[clamp(1.5rem,4vw,2.4rem)] italic">{c.texts.tagline}</p>
+          </Section>
+        )}
+
         {/* RSVP */}
         <Section id="rsvp" className="pb-28">
           <div className="grid gap-10 md:grid-cols-12">
@@ -770,6 +792,7 @@ export function Invitation({ config, slug, guest, preview }: Props) {
         {/* Footer */}
         <footer className="mx-auto w-full max-w-5xl px-5 pb-28 sm:px-8">
           <Divider kind={c.theme.ornament} />
+          {c.texts.signature.trim() && <p className="display mt-10 text-center text-lg italic">{c.texts.signature}</p>}
           {visibleCredits.length > 0 && (
             <div className={`mt-10 grid gap-8 text-center ${visibleCredits.length > 1 ? "sm:grid-cols-2 sm:text-start" : ""}`}>
               {visibleCredits.map((k, i) => (
@@ -782,6 +805,11 @@ export function Invitation({ config, slug, guest, preview }: Props) {
           )}
           {(c.music.credit || c.texts.footerNote) && (
             <p className="dim mt-14 text-center text-xs">{[c.music.credit, c.texts.footerNote].filter(Boolean).join(" · ")}</p>
+          )}
+          {!preview && (
+            <p className="dim mt-4 text-center text-[0.62rem] uppercase tracking-[0.2em] opacity-70">
+              Made with {process.env.NEXT_PUBLIC_APP_NAME || "Mandapam"}
+            </p>
           )}
         </footer>
       </main>
