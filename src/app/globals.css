@@ -1,35 +1,40 @@
 @import "tailwindcss";
 
-/* ---------- Mandapam design system: "editorial paper" ---------- */
+/* ---------- Mandapam design system v3: "the studio" ---------- */
 :root {
-  --paper: #fbf7ef; /* ivory paper */
-  --paper-2: #f1eadb; /* sand, for alternating bands */
+  --paper: #faf8f4; /* warm ivory */
+  --paper-2: #f3efe8; /* sunk panels */
   --surface: #ffffff;
-  --ink: #1f1a17; /* warm near-black */
-  --ink-2: #4d443d;
-  --ink-3: #6c6259;
-  --gold: #b8933a; /* antique gold, used for hairlines and small marks */
-  --gold-soft: #e3cf9c;
-  --gold-ink: #7d5f17;
-  --pink: #6e1f2f; /* oxblood: the one accent colour (name kept for older code) */
+  --ink: #252525; /* charcoal */
+  --ink-2: #4a4743;
+  --ink-3: #6e6a64; /* muted, 4.5:1 on ivory */
+  --gray: #77736d;
+  --gold: #b49a62; /* muted gold, used for hairlines and small marks */
+  --gold-soft: #ded0ae;
+  --gold-ink: #7d6836;
+  --pink: #6e1f2f; /* oxblood: kept for the landing hero's warm gradient, not the app chrome */
   --pink-deep: #501722;
-  --teal: #1f1a17;
+  --teal: #252525;
   --teal-deep: #15110f;
-  --leaf: #2f6b4a;
-  --rose: #c98a8a;
+  --leaf: #4f6b4a;
+  --sage: #9aa58f;
+  --sage-ink: #55624d;
+  --rose: #c9a5a0;
+  --rose-ink: #8e5f58;
+  --forest: #26352e;
   --indigo: #2f3d6e;
-  --line: rgba(31, 26, 23, 0.13);
-  --line-2: rgba(31, 26, 23, 0.28);
-  --ok: #2f6b4a;
-  --warn: #7d5f17;
-  --err: #a3392f;
-  --brand: #1f1a17;
-  --brand-2: #b8933a;
+  --line: #e8e3db;
+  --line-2: #d9d2c6;
+  --ok: #4f6b4a;
+  --warn: #8a6a2e;
+  --err: #9a4b43;
+  --brand: #252525;
+  --brand-2: #b49a62;
   --r-sm: 6px;
   --r-md: 12px;
   --r-lg: 22px;
-  --shadow: 0 30px 60px -38px rgba(31, 26, 23, 0.45);
-  --hard: 0 1px 0 rgba(31, 26, 23, 0.06);
+  --shadow: 0 1px 2px rgba(37, 37, 37, 0.04), 0 10px 28px -14px rgba(37, 37, 37, 0.14);
+  --hard: 0 1px 0 rgba(37, 37, 37, 0.06);
   /* gradients: warm dusk, from saffron through rose to plum */
   --grad-dusk: linear-gradient(160deg, #f8c58f 0%, #ee8f7a 42%, #b8456a 78%, #6b2450 100%);
   --grad-text: linear-gradient(95deg, #9c1f3e 0%, #cf5a2c 100%);
@@ -41,34 +46,40 @@
     radial-gradient(55% 60% at 70% 100%, rgba(184, 69, 106, 0.22) 0%, transparent 70%);
 }
 [data-theme="dark"] {
-  --paper: #171210;
-  --paper-2: #100c0a;
-  --surface: #221a17;
-  --ink: #fbf7ef;
-  --ink-2: rgba(251, 247, 239, 0.78);
-  --ink-3: rgba(251, 247, 239, 0.6);
-  --gold: #d3ae58;
-  --gold-ink: #d3ae58;
-  --line: rgba(251, 247, 239, 0.14);
-  --line-2: rgba(251, 247, 239, 0.3);
-  --brand: #fbf7ef;
-  --shadow: 0 30px 60px -38px rgba(0, 0, 0, 0.7);
+  --paper: #1b1a18;
+  --paper-2: #141312;
+  --surface: #232220;
+  --ink: #f2eee7;
+  --ink-2: #d6d0c6;
+  --ink-3: #aca59a;
+  --gray: #8f887d;
+  --gold: #cdb78a;
+  --gold-ink: #d8c49a;
+  --sage-ink: #b9c4ad;
+  --rose-ink: #e0bdb7;
+  --line: #34312d;
+  --line-2: #48443e;
+  --ok: #9dbb94;
+  --warn: #d9b874;
+  --err: #e0998f;
+  --brand: #f2eee7;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 28px -14px rgba(0, 0, 0, 0.6);
 }
 html { color-scheme: light; }
 body {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
-  font-family: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  font-family: "DM Sans", "Helvetica Neue", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 html { scroll-behavior: smooth; scroll-padding-top: 88px; }
 
 /* shared pieces, prefixed m- */
-.m-dis { font-family: "Instrument Serif", "Iowan Old Style", Georgia, serif; font-weight: 400; letter-spacing: -0.015em; }
+.m-dis { font-family: "Cormorant Garamond", "Iowan Old Style", Georgia, serif; font-weight: 500; letter-spacing: -0.005em; }
 .m-dis em, .m-em { font-style: italic; color: var(--pink); background: var(--grad-text); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; padding-right: 0.06em; }
-.m-hand { font-family: "Instrument Serif", Georgia, serif; font-style: italic; }
+.m-hand { font-family: "Cormorant Garamond", Georgia, serif; font-style: italic; }
 .m-eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold-ink); }
 .m-grain { background-image: radial-gradient(rgba(31, 26, 23, 0.045) 1px, transparent 1px); background-size: 5px 5px; }
 .m-btn {
@@ -210,4 +221,4 @@ html { scroll-behavior: smooth; scroll-padding-top: 88px; }
   font-size: 0.9rem; font-weight: 500; border: 1px solid var(--line-2); cursor: pointer;
 }
 .btn-secondary:hover { background: var(--paper-2); }
-.card { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); }
