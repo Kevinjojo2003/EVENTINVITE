@@ -46,12 +46,12 @@ export default function Landing() {
           {/* ---------- Hero ---------- */}
           <section id="top" className="grid items-center gap-16 px-5 pb-24 pt-16 md:px-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12 lg:px-[120px] lg:pb-32 lg:pt-24" style={{ backgroundImage: "var(--mesh)" }}>
             <div>
-              <p className="m-eyebrow m-fu">Invitations · any language · any tradition</p>
+              <p className="m-eyebrow m-fu">The invitation, and everything after it</p>
               <h1 className="m-dis m-fu m-fu-2 mt-6 text-[clamp(2.9rem,8.4vw,6rem)] leading-[0.98]" style={{ textWrap: "balance" }}>
                 An invitation <em>worth opening.</em>
               </h1>
               <p className="m-fu m-fu-3 mt-8 max-w-[500px] text-[clamp(1.05rem,2.2vw,1.25rem)] leading-[1.65]" style={{ color: "var(--ink-2)" }}>
-                For weddings, betrothals, housewarmings, birthdays and corporate events. Your names, your language, your traditions, on one page that opens straight from a WhatsApp link.
+                For weddings, betrothals, housewarmings, birthdays and corporate events. Your names, your language, your traditions, on one page that opens straight from a WhatsApp link — then the checklist, budget, vendors and guest list that get you there.
               </p>
               <div className="m-fu m-fu-3 mt-10 flex flex-wrap gap-3">
                 <Link href="/login" className="m-btn m-btn-pri">
@@ -174,7 +174,7 @@ export default function Landing() {
             <div className="mx-auto mb-16 max-w-[680px] text-center">
               <p className="m-eyebrow">What you actually get</p>
               <h2 className="m-dis mt-4 text-[clamp(2rem,4.6vw,3.1rem)] leading-[1.08]">
-                Five things that decide whether an invitation works, <em>done properly.</em>
+                Everything from the first invite to the last guest checked in, <em>done properly.</em>
               </h2>
             </div>
             <div className="mx-auto grid max-w-[1100px] gap-x-14 gap-y-20 md:grid-cols-2">
@@ -206,7 +206,7 @@ export default function Landing() {
                 <p className="m-eyebrow">Free</p>
                 <p className="m-dis mt-3 text-[56px] leading-none">₹0</p>
                 <ul className="mt-7 grid gap-3.5 text-[15px]" style={{ color: "var(--ink-2)" }}>
-                  {["Your own invitation page", "Personal links for every guest", "RSVPs and a guest list", "WhatsApp sharing", "Any language, any tradition", "QR passes and door check-in for corporate events"].map((t) => (
+                  {["Your own invitation page", "Personal links for every guest", "RSVPs and a guest list", "WhatsApp sharing", "Any language, any tradition", "Checklist, budget and vendor tracking", "QR passes and door check-in for corporate events"].map((t) => (
                     <li key={t} className="flex items-start gap-3">
                       <span className="mt-[9px]">
                         <Diamond />
@@ -262,7 +262,7 @@ export default function Landing() {
           <div>
             <p className="m-dis text-[28px]">{app}</p>
             <p className="mt-3 max-w-[300px] text-[15px] leading-[1.65]" style={{ color: "var(--ink-2)" }}>
-              Invitation pages for weddings, nikahs, house blessings, birthdays and the occasional office dinner.
+              Invitations, guest lists, checklists and budgets for weddings, nikahs, house blessings, birthdays and the occasional office dinner.
             </p>
           </div>
           {[
