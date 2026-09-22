@@ -35,7 +35,7 @@ export async function createInvite(input: { type: EventType; name1: string; name
     .select("id")
     .single();
   if (error) return { error: error.code === "23505" ? "That address is taken. Try another." : error.message };
-  redirect(`/dashboard/${data.id}`);
+  redirect(`/dashboard/${data.id}/edit`);
 }
 
 export async function saveConfig(id: string, config: InviteConfig) {
@@ -44,6 +44,7 @@ export async function saveConfig(id: string, config: InviteConfig) {
   const { error } = await supabase.from("invites").update({ config: clean }).eq("id", id);
   if (error) return { error: error.message };
   revalidatePath(`/dashboard/${id}`);
+  revalidatePath(`/dashboard/${id}/edit`);
   return { ok: true };
 }
 
@@ -52,6 +53,7 @@ export async function setPublished(id: string, published: boolean) {
   const { error } = await supabase.from("invites").update({ published }).eq("id", id);
   if (error) return { error: error.message };
   revalidatePath(`/dashboard/${id}`);
+  revalidatePath(`/dashboard/${id}/edit`);
   revalidatePath("/dashboard");
   return { ok: true };
 }
@@ -63,6 +65,7 @@ export async function updateSlug(id: string, raw: string) {
   const { error } = await supabase.from("invites").update({ slug }).eq("id", id);
   if (error) return { error: error.code === "23505" ? "That address is taken." : error.message };
   revalidatePath(`/dashboard/${id}`);
+  revalidatePath(`/dashboard/${id}/edit`);
   return { ok: true, slug };
 }
 

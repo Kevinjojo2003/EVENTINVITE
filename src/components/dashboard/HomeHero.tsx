@@ -35,13 +35,13 @@ export function HomeHero({ invite, guests, rsvps, tasks, expenses }: { invite: I
   })();
 
   const needs: { icon: typeof Users; text: string; note: string; href: string }[] = [];
-  if (!invite.published) needs.push({ icon: Megaphone, text: "This event isn't live yet", note: "Guests see a not-found page until you publish it", href: `/dashboard/${invite.id}` });
+  if (!invite.published) needs.push({ icon: Megaphone, text: "This event isn't live yet", note: "Guests see a not-found page until you publish it", href: `/dashboard/${invite.id}/edit` });
   if (guests.length === 0) needs.push({ icon: Users, text: "No guests added yet", note: "Add a few names, or bring in a list from your phone", href: `/dashboard/${invite.id}/guests` });
   else {
     if (unsent > 0) needs.push({ icon: Users, text: `${unsent} invitation${unsent === 1 ? "" : "s"} not sent yet`, note: "Send the personal link on WhatsApp, one tap each", href: `/dashboard/${invite.id}/guests` });
     if (unreplied > 0) needs.push({ icon: MailQuestion, text: `${unreplied} guest${unreplied === 1 ? "" : "s"} have not replied`, note: "A reminder helps closer to the day", href: `/dashboard/${invite.id}/guests` });
   }
-  if (!c.heroPhoto && c.photos.length === 0) needs.push({ icon: ImageIcon, text: "Add a photo or two", note: "It is the first thing WhatsApp shows", href: `/dashboard/${invite.id}` });
+  if (!c.heroPhoto && c.photos.length === 0) needs.push({ icon: ImageIcon, text: "Add a photo or two", note: "It is the first thing WhatsApp shows", href: `/dashboard/${invite.id}/edit` });
   if (tasksOverdue > 0) needs.push({ icon: ListChecks, text: `${tasksOverdue} task${tasksOverdue === 1 ? "" : "s"} overdue`, note: "Clear these first, then the rest of the week", href: `/dashboard/${invite.id}/checklist` });
   else if (tasksDueSoon > 0) needs.push({ icon: ListChecks, text: `${tasksDueSoon} task${tasksDueSoon === 1 ? "" : "s"} due this week`, note: "Stay ahead of the checklist", href: `/dashboard/${invite.id}/checklist` });
   if (dueExpenses > 0) needs.push({ icon: Wallet, text: `${dueExpenses} vendor payment${dueExpenses === 1 ? "" : "s"} still due`, note: "Clear balances before the event", href: `/dashboard/${invite.id}/budget` });

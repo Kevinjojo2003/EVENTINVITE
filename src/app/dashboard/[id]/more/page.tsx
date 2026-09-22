@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { Building2, Calendar, FileText, Hotel, MessagesSquare, QrCode, Radio, Truck, Users2 } from "lucide-react";
+import { Building2, Calendar, FileText, Hotel, MessageSquare, MessagesSquare, QrCode, Radio, Truck, Users2, Wallet } from "lucide-react";
 
 export default async function MorePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -11,6 +11,8 @@ export default async function MorePage({ params }: { params: Promise<{ id: strin
 
   const items = [
     ...(inv.event_type === "corporate" ? [{ href: `/dashboard/${id}/checkin`, label: "Scan tickets", note: "Check guests in at the door", icon: QrCode }] : []),
+    { href: `/dashboard/${id}/rsvps`, label: "Replies", note: "Who's coming, who isn't", icon: MessageSquare },
+    { href: `/dashboard/${id}/budget`, label: "Budget", note: "Spent, committed, remaining", icon: Wallet },
     { href: `/dashboard/${id}/vendors`, label: "Vendors", note: "Contacts, quotes, payment status", icon: Building2 },
     { href: `/dashboard/${id}/timeline`, label: "Timeline", note: "The run of show for the day", icon: Calendar },
     { href: `/dashboard/${id}/accommodation`, label: "Accommodation", note: "Hotels, rooms, check-in dates", icon: Hotel },

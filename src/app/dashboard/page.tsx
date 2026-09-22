@@ -96,7 +96,7 @@ export default async function DashboardHome() {
                 </a>
                 <div className="mt-auto flex gap-2 pt-2">
                   <Link href={`/dashboard/${inv.id}`} className="btn-primary">
-                    Edit
+                    Open
                   </Link>
                   <Link href={`/dashboard/${inv.id}/guests`} className="btn-secondary">
                     Guests

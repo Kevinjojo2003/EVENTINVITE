@@ -30,9 +30,9 @@
   --err: #9a4b43;
   --brand: #252525;
   --brand-2: #b49a62;
-  --r-sm: 6px;
-  --r-md: 12px;
-  --r-lg: 22px;
+  --r-sm: 6px; /* buttons */
+  --r: 8px; /* inputs, panels */
+  --r-md: 12px; /* cards, max */
   --shadow: 0 1px 2px rgba(37, 37, 37, 0.04), 0 10px 28px -14px rgba(37, 37, 37, 0.14);
   --hard: 0 1px 0 rgba(37, 37, 37, 0.06);
 }
@@ -196,19 +196,19 @@ html { scroll-behavior: smooth; scroll-padding-top: 88px; }
 .field > label, .field > .label { font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); font-weight: 500; }
 .field input, .field textarea, .field select {
   border: 1px solid var(--line-2); background: var(--surface); color: var(--ink);
-  padding: 0.55rem 0.7rem; font: inherit; font-size: 0.95rem; border-radius: 4px; width: 100%;
+  padding: 0.55rem 0.7rem; font: inherit; font-size: 0.95rem; border-radius: var(--r); width: 100%; min-height: 44px;
 }
-.field input:focus, .field textarea:focus, .field select:focus { outline: 2px solid var(--brand-2); outline-offset: 1px; border-color: var(--brand-2); }
+.field input:focus, .field textarea:focus, .field select:focus { outline: 2px solid var(--gold); outline-offset: 1px; border-color: var(--gold); }
 .field input[type="color"] { padding: 0.15rem; height: 2.4rem; width: 3.2rem; }
 .btn-primary {
-  display: inline-flex; align-items: center; gap: 0.5rem;
-  background: var(--brand); color: var(--paper); padding: 0.6rem 1.25rem; border-radius: 999px;
-  font-size: 0.9rem; font-weight: 500; border: 1px solid var(--brand); cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+  background: var(--ink); color: var(--paper); padding: 0 1.1rem; min-height: 44px; border-radius: var(--r-sm);
+  font-size: 0.9rem; font-weight: 500; border: 1px solid var(--ink); cursor: pointer;
 }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-secondary {
-  display: inline-flex; align-items: center; gap: 0.5rem;
-  background: transparent; color: var(--ink); padding: 0.6rem 1.25rem; border-radius: 999px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+  background: var(--surface); color: var(--ink); padding: 0 1.1rem; min-height: 44px; border-radius: var(--r-sm);
   font-size: 0.9rem; font-weight: 500; border: 1px solid var(--line-2); cursor: pointer;
 }
 .btn-secondary:hover { background: var(--paper-2); }
