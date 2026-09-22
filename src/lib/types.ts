@@ -171,6 +171,8 @@ export type Invite = {
   event_type: EventType;
   published: boolean;
   config: InviteConfig;
+  total_budget: number | null;
+  category_budgets: Record<string, number>;
   created_at: string;
   updated_at: string;
 };
@@ -233,6 +235,7 @@ export type Vendor = {
   paid: number;
   status: "Shortlisted" | "Contacted" | "Negotiating" | "Confirmed" | "Completed";
   arrived: boolean;
+  due_date: string | null;
   note: string | null;
   created_at: string;
 };

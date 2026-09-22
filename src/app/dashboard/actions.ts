@@ -235,8 +235,21 @@ export async function deleteExpense(inviteId: string, expenseId: string) {
   return { ok: true };
 }
 
+// ---------- budget ----------
+export async function setBudget(inviteId: string, fields: { total_budget?: number | null; category_budgets?: Record<string, number> }) {
+  const { supabase } = await me();
+  const clean: Record<string, unknown> = {};
+  if (fields.total_budget !== undefined) clean.total_budget = fields.total_budget === null ? null : Math.max(0, Number(fields.total_budget) || 0);
+  if (fields.category_budgets !== undefined) clean.category_budgets = fields.category_budgets;
+  const { error } = await supabase.from("invites").update(clean).eq("id", inviteId);
+  if (error) return { error: needsMigration(error) };
+  revalidatePath(`/dashboard/${inviteId}/budget`);
+  revalidatePath("/dashboard");
+  return { ok: true };
+}
+
 // ---------- vendors ----------
-export async function addVendor(inviteId: string, input: { category: string; name: string; contact_name?: string; contact_phone?: string; contact_email?: string; quoted?: number; paid?: number; status?: string; note?: string }) {
+export async function addVendor(inviteId: string, input: { category: string; name: string; contact_name?: string; contact_phone?: string; contact_email?: string; quoted?: number; paid?: number; status?: string; due_date?: string | null; note?: string }) {
   const { supabase } = await me();
   const row = {
     invite_id: inviteId,
@@ -248,6 +261,7 @@ export async function addVendor(inviteId: string, input: { category: string; nam
     quoted: Math.max(0, Number(input.quoted) || 0),
     paid: Math.max(0, Number(input.paid) || 0),
     status: input.status || "Shortlisted",
+    due_date: input.due_date || null,
     note: input.note?.trim().slice(0, 400) || null,
   };
   if (!row.name) return { error: "Give the vendor a name." };
@@ -258,7 +272,11 @@ export async function addVendor(inviteId: string, input: { category: string; nam
   return { ok: true };
 }
 
-export async function updateVendor(inviteId: string, vendorId: string, fields: Partial<{ category: string; name: string; contact_name: string; contact_phone: string; contact_email: string; quoted: number; paid: number; status: string; arrived: boolean; note: string }>) {
+export async function updateVendor(
+  inviteId: string,
+  vendorId: string,
+  fields: Partial<{ category: string; name: string; contact_name: string; contact_phone: string; contact_email: string; quoted: number; paid: number; status: string; arrived: boolean; due_date: string | null; note: string }>,
+) {
   const { supabase } = await me();
   const clean: Record<string, unknown> = {};
   if (fields.category !== undefined) clean.category = fields.category.trim().slice(0, 60);
@@ -270,6 +288,7 @@ export async function updateVendor(inviteId: string, vendorId: string, fields: P
   if (fields.paid !== undefined) clean.paid = Math.max(0, Number(fields.paid) || 0);
   if (fields.status !== undefined) clean.status = fields.status;
   if (fields.arrived !== undefined) clean.arrived = fields.arrived;
+  if (fields.due_date !== undefined) clean.due_date = fields.due_date || null;
   if (fields.note !== undefined) clean.note = fields.note.trim().slice(0, 400) || null;
   const { error } = await supabase.from("vendors").update(clean).eq("id", vendorId).eq("invite_id", inviteId);
   if (error) return { error: needsMigration(error) };
