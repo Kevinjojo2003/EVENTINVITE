@@ -1,7 +1,8 @@
 "use client";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useState, useTransition } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { devSignIn } from "./dev-actions";
 
 function LoginForm() {
   const params = useSearchParams();
@@ -12,6 +13,8 @@ function LoginForm() {
   const [error, setError] = useState(params.get("error") === "link" ? "That sign-in link has expired or was already used. Request a new one below." : "");
   const [wait, setWait] = useState(0); // seconds until another link can be requested
   const app = process.env.NEXT_PUBLIC_APP_NAME || "Mandapam";
+  const [devPending, startDev] = useTransition();
+  const [devError, setDevError] = useState("");
 
   // A short pause between requests, so a second tap does not use up the hourly email allowance.
   useEffect(() => {
@@ -96,6 +99,29 @@ function LoginForm() {
           )}
           {error && <p className="text-sm text-red-700" role="alert">{error}</p>}
         </form>
+      )}
+
+      {process.env.NODE_ENV === "development" && (
+        <div className="rounded border border-dashed p-4" style={{ borderColor: "var(--line-2)" }}>
+          <p className="text-xs font-medium uppercase tracking-[0.1em]" style={{ color: "var(--ink-3)" }}>
+            Local testing only — not shown in production
+          </p>
+          <button
+            type="button"
+            className="btn-secondary mt-3"
+            disabled={devPending}
+            onClick={() =>
+              startDev(async () => {
+                setDevError("");
+                const r = await devSignIn();
+                if (r?.error) setDevError(r.error);
+              })
+            }
+          >
+            {devPending ? "Signing in…" : "Skip email — sign in as a test user"}
+          </button>
+          {devError && <p className="mt-2 text-sm text-red-700" role="alert">{devError}</p>}
+        </div>
       )}
     </main>
   );
