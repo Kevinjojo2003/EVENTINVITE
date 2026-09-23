@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { devSignIn } from "./dev-actions";
 
 type Mode = "password" | "code";
-type Step = "password" | "code-request" | "code-verify" | "set-password";
+type Step = "password" | "signup" | "code-request" | "code-verify" | "set-password";
 
 function LoginForm() {
   const params = useSearchParams();
@@ -45,6 +45,30 @@ function LoginForm() {
       const m = error.message.toLowerCase();
       if (m.includes("invalid")) setError("That email or password isn't right.");
       else setError("Could not sign in. Please try again.");
+      return;
+    }
+    router.push(next);
+    router.refresh();
+  }
+
+  async function signUp(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    if (newPassword.length < 8) return setError("Use at least 8 characters.");
+    if (newPassword !== newPassword2) return setError("Those two passwords don't match.");
+    setBusy(true);
+    const supabase = createClient();
+    const { data, error } = await supabase.auth.signUp({ email, password: newPassword, options: { data: { has_password: true } } });
+    setBusy(false);
+    if (error) {
+      const m = error.message.toLowerCase();
+      if (m.includes("already") || m.includes("registered")) setError("An account already exists for that email. Sign in with your password instead.");
+      else setError("Could not create the account. Please try again.");
+      return;
+    }
+    if (!data.session) {
+      // Autoconfirm is off, or this landed as an unconfirmed re-signup: nothing more we can do without email delivery.
+      setError("Account created, but it needs email confirmation to sign in, which isn't available right now. Contact support.");
       return;
     }
     router.push(next);
@@ -136,9 +160,10 @@ function LoginForm() {
         <p className="text-xs uppercase tracking-[0.3em]" style={{ color: "var(--ink-2)" }}>
           {app}
         </p>
-        <h1 className="mt-2 text-3xl font-medium">{step === "set-password" ? "Set a password" : "Sign in"}</h1>
+        <h1 className="mt-2 text-3xl font-medium">{step === "set-password" ? "Set a password" : step === "signup" ? "Create an account" : "Sign in"}</h1>
         <p className="mt-2 text-sm" style={{ color: "var(--ink-2)" }}>
           {step === "password" && "Your email and password."}
+          {step === "signup" && "Your email and a password (at least 8 characters)."}
           {step === "code-request" && "We'll email you a 6-digit code — no password needed."}
           {step === "code-verify" && "Enter the code we sent you."}
           {step === "set-password" && "You're signed in. Add a password so you can skip the code next time (at least 8 characters)."}
@@ -158,14 +183,53 @@ function LoginForm() {
           <button type="submit" className="btn-primary justify-center" disabled={busy}>
             {busy ? "Signing in" : "Sign in"}
           </button>
-          <button type="button" className="text-sm underline underline-offset-4" style={{ color: "var(--ink-2)" }} onClick={() => setMode("code")}>
-            No password yet? Sign in with a one-time code
-          </button>
+          <div className="flex items-center justify-between text-sm">
+            <button type="button" className="underline underline-offset-4" style={{ color: "var(--ink-2)" }} onClick={() => setMode("code")}>
+              No password yet? Sign in with a one-time code
+            </button>
+            <button
+              type="button"
+              className="underline underline-offset-4"
+              style={{ color: "var(--ink-2)" }}
+              onClick={() => {
+                setError("");
+                setNewPassword("");
+                setNewPassword2("");
+                setStep("signup");
+              }}
+            >
+              New here? Create an account
+            </button>
+          </div>
           {process.env.NEXT_PUBLIC_GOOGLE_AUTH === "1" && (
             <button type="button" className="btn-secondary justify-center" onClick={google}>
               Continue with Google
             </button>
           )}
+          {error && <p className="text-sm text-red-700" role="alert">{error}</p>}
+        </form>
+      )}
+
+      {step === "signup" && (
+        <form onSubmit={signUp} className="grid gap-4">
+          <div className="field">
+            <label htmlFor="signup-email">Email</label>
+            <input id="signup-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" autoComplete="email" autoFocus />
+          </div>
+          <div className="field">
+            <label htmlFor="signup-password">Password</label>
+            <input id="signup-password" type="password" required minLength={8} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} autoComplete="new-password" />
+          </div>
+          <div className="field">
+            <label htmlFor="signup-password-2">Confirm password</label>
+            <input id="signup-password-2" type="password" required minLength={8} value={newPassword2} onChange={(e) => setNewPassword2(e.target.value)} autoComplete="new-password" />
+          </div>
+          <button type="submit" className="btn-primary justify-center" disabled={busy}>
+            {busy ? "Creating account" : "Create account"}
+          </button>
+          <button type="button" className="text-sm underline underline-offset-4" style={{ color: "var(--ink-2)" }} onClick={() => { setError(""); setStep("password"); }}>
+            Already have an account? Sign in
+          </button>
           {error && <p className="text-sm text-red-700" role="alert">{error}</p>}
         </form>
       )}
