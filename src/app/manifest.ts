@@ -3,7 +3,7 @@ import type { MetadataRoute } from "next";
 // Next.js serves this at /manifest.webmanifest. It is what makes "Add to Home Screen"
 // (on a phone opening the dashboard) behave like an app: its own icon, no browser chrome.
 export default function manifest(): MetadataRoute.Manifest {
-  const name = process.env.NEXT_PUBLIC_APP_NAME || "Mandapam";
+  const name = process.env.NEXT_PUBLIC_APP_NAME || "K-Invites";
   return {
     name: `${name} — invitations`,
     short_name: name,

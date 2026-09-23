@@ -169,7 +169,7 @@ export function icsHref(title: string, start: string, end: string, location: str
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Mandapam//Invitation//EN",
+    "PRODID:-//K-Invites//Invitation//EN",
     "BEGIN:VEVENT",
     `UID:${stamp(start)}-${Math.abs(hash(title))}@mandapam`,
     // DTSTAMP is required but must not depend on "now", or the server and browser render different links.

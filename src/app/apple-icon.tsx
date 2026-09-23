@@ -5,8 +5,8 @@ export const contentType = "image/png";
 
 // iOS ignores transparency and rounds this itself, so it is drawn as a filled square.
 export default function AppleIcon() {
-  const app = process.env.NEXT_PUBLIC_APP_NAME || "Mandapam";
-  const initial = app.trim()[0]?.toUpperCase() || "M";
+  const app = process.env.NEXT_PUBLIC_APP_NAME || "K-Invites";
+  const initial = app.trim()[0]?.toUpperCase() || "K";
   return new ImageResponse(
     (
       <div

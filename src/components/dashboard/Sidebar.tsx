@@ -44,8 +44,8 @@ export function Sidebar({ id, title, dateLabel }: { id: string; title: string; d
   return (
     <aside aria-label="Main" className="hidden shrink-0 flex-col border-r px-2.5 py-[22px] md:flex md:w-[72px] xl:w-[236px] xl:px-4" style={{ borderColor: "var(--line)", background: "var(--paper)" }}>
       <Link href="/" className="m-dis px-0 text-xl xl:px-3 xl:text-[23px]" style={{ textAlign: "center" }}>
-        <span className="xl:hidden">M</span>
-        <span className="hidden xl:inline">Mandapam</span>
+        <span className="xl:hidden">K</span>
+        <span className="hidden xl:inline">{process.env.NEXT_PUBLIC_APP_NAME || "K-Invites"}</span>
       </Link>
 
       <Link

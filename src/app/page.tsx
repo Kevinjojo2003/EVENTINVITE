@@ -12,7 +12,7 @@ function Diamond() {
 }
 
 export default function Landing() {
-  const app = process.env.NEXT_PUBLIC_APP_NAME || "Mandapam";
+  const app = process.env.NEXT_PUBLIC_APP_NAME || "K-Invites";
   return (
     <>
       <link rel="stylesheet" href={FONTS} />

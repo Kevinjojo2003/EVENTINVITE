@@ -7,7 +7,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const app = process.env.NEXT_PUBLIC_APP_NAME || "Mandapam";
+  const app = process.env.NEXT_PUBLIC_APP_NAME || "K-Invites";
   return (
     <div className="min-h-screen">
       <header className="border-b bg-white" style={{ borderColor: "var(--line)" }}>

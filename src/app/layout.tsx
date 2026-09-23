@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
-const app = process.env.NEXT_PUBLIC_APP_NAME || "Mandapam";
+const app = process.env.NEXT_PUBLIC_APP_NAME || "K-Invites";
 
 export const metadata: Metadata = {
   title: app,

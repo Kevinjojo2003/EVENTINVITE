@@ -6,8 +6,8 @@ export const contentType = "image/png";
 // The app icon: an initial-seal on the brand's oxblood-to-plum gradient, generated at request
 // time (same technique as the invitation's share-card route), so no binary asset is checked in.
 export default function Icon() {
-  const app = process.env.NEXT_PUBLIC_APP_NAME || "Mandapam";
-  const initial = app.trim()[0]?.toUpperCase() || "M";
+  const app = process.env.NEXT_PUBLIC_APP_NAME || "K-Invites";
+  const initial = app.trim()[0]?.toUpperCase() || "K";
   return new ImageResponse(
     (
       <div

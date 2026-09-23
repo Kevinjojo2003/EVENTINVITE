@@ -190,7 +190,7 @@ export const FEATURES: { title: string; text: string; mock: ReactNode; wide?: bo
   },
   {
     title: "One tap to WhatsApp",
-    text: "Mandapam writes the message for you and opens WhatsApp with it ready. Send twenty or two hundred, and the list keeps track of who has been sent and who has replied.",
+    text: "K-Invites writes the message for you and opens WhatsApp with it ready. Send twenty or two hundred, and the list keeps track of who has been sent and who has replied.",
     mock: (
       <Mock>
         <div className="ms-auto max-w-[300px] rounded-[12px] rounded-te-[2px] p-3.5 text-[14px] leading-[1.5]" style={{ background: "rgba(47,107,79,.14)" }}>

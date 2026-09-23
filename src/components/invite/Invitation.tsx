@@ -819,7 +819,7 @@ export function Invitation({ config, slug, guest, preview }: Props) {
           )}
           {!preview && (
             <p className="dim mt-4 text-center text-[0.62rem] uppercase tracking-[0.2em] opacity-70">
-              Made with {process.env.NEXT_PUBLIC_APP_NAME || "Mandapam"}
+              Made with {process.env.NEXT_PUBLIC_APP_NAME || "K-Invites"}
             </p>
           )}
         </footer>

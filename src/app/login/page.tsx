@@ -21,7 +21,7 @@ function LoginForm() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(params.get("error") === "link" ? "That sign-in link expired. Request a new code below." : "");
   const [wait, setWait] = useState(0); // seconds until another code can be requested
-  const app = process.env.NEXT_PUBLIC_APP_NAME || "Mandapam";
+  const app = process.env.NEXT_PUBLIC_APP_NAME || "K-Invites";
   const [devPending, startDev] = useTransition();
   const [devError, setDevError] = useState("");
 
