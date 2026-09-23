@@ -7,7 +7,16 @@ import { HomeHero } from "@/components/dashboard/HomeHero";
 
 export default async function DashboardHome() {
   const supabase = await createClient();
-  const { data } = await supabase.from("invites").select("*").order("created_at", { ascending: false });
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  // "invites" also has a public-read RLS policy (for published events' guest-facing page), so an
+  // unfiltered select here would include other hosts' published events too — scope explicitly to
+  // what this user owns or has accepted a team invite to.
+  const { data: team } = await supabase.from("event_team").select("invite_id").eq("accepted_user_id", user?.id ?? "");
+  const teamInviteIds = (team ?? []).map((t) => t.invite_id);
+  const orFilter = teamInviteIds.length ? `owner_id.eq.${user?.id},id.in.(${teamInviteIds.join(",")})` : `owner_id.eq.${user?.id}`;
+  const { data } = await supabase.from("invites").select("*").or(orFilter).order("created_at", { ascending: false });
   const invites = (data ?? []) as Invite[];
 
   // The "home screen" summarises one event: the most recent live one, or the most recent draft.
