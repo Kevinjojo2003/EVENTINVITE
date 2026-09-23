@@ -12,3 +12,6 @@ next-env.d.ts
 
 .claude
 supabase/.temp
+
+.vercel
+.env*
