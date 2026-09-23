@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 
 // Shared frame for the plain-language legal pages.
 export function Legal({ title, updated, children }: { title: string; updated: string; children: ReactNode }) {
-  const app = process.env.NEXT_PUBLIC_APP_NAME || "Mandapam";
+  const app = process.env.NEXT_PUBLIC_APP_NAME || "K-Invites";
   return (
     <>
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500&family=Jost:wght@300;400;500;600&display=swap" />

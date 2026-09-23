@@ -1,34 +1,25 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { Sidebar } from "@/components/dashboard/Sidebar";
+import { TabBar } from "@/components/dashboard/TabBar";
+import { displayTitle, normalizeConfig } from "@/lib/themes";
+import { shortDate } from "@/lib/format";
+import type { EventType } from "@/lib/types";
 
 export default async function InviteLayout({ children, params }: { children: React.ReactNode; params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
-  const { data: inv } = await supabase.from("invites").select("id, slug, event_type").eq("id", id).maybeSingle();
+  const { data: inv } = await supabase.from("invites").select("id, event_type, config").eq("id", id).maybeSingle();
   if (!inv) notFound();
-  const tabs = [
-    { href: `/dashboard/${id}`, label: "Edit" },
-    { href: `/dashboard/${id}/guests`, label: "Guests" },
-    { href: `/dashboard/${id}/rsvps`, label: "RSVPs" },
-    // QR tickets and door check-in exist for corporate events only.
-    ...(inv.event_type === "corporate" ? [{ href: `/dashboard/${id}/checkin`, label: "Check-in" }] : []),
-  ];
+  const c = normalizeConfig(inv.config, inv.event_type as EventType);
+  const title = displayTitle(c) || "Untitled event";
+  const dateLabel = shortDate(c.event.dateTime) || "Date not set";
+
   return (
-    <div>
-      <div className="border-b bg-white" style={{ borderColor: "var(--line)" }}>
-        <div className="mx-auto flex w-full max-w-7xl items-center gap-1 px-5 sm:px-8">
-          <Link href="/dashboard" className="mr-3 py-2.5 text-sm" style={{ color: "var(--ink-2)" }}>
-            ← All events
-          </Link>
-          {tabs.map((t) => (
-            <Link key={t.href} href={t.href} className="px-3 py-2.5 text-sm hover:underline">
-              {t.label}
-            </Link>
-          ))}
-        </div>
-      </div>
-      {children}
+    <div className="flex min-h-screen" style={{ background: "var(--paper)" }}>
+      <Sidebar id={id} title={title} dateLabel={dateLabel} />
+      <div className="min-w-0 flex-1 pb-[70px] md:pb-0">{children}</div>
+      <TabBar id={id} />
     </div>
   );
 }

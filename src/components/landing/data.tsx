@@ -158,8 +158,39 @@ export const FEATURES: { title: string; text: string; mock: ReactNode; wide?: bo
     ),
   },
   {
+    title: "It doesn't stop at RSVP",
+    text: "A checklist with the usual milestones already on it, a budget with what's quoted and what's paid, vendors with their contact and status, and a timeline for the day itself — all against the same guest list.",
+    wide: true,
+    mock: (
+      <div className="grid items-center gap-6 md:grid-cols-2">
+        <Mock>
+          <p className={label} style={{ color: "var(--ink-3)" }}>Checklist</p>
+          {["Book venue", "Finalise guest list", "Send invitations"].map((t, i) => (
+            <div key={t} className="mt-2.5 flex items-center gap-2.5 text-[14px]">
+              <span
+                className="flex h-[16px] w-[16px] shrink-0 items-center justify-center rounded-[4px] text-[10px]"
+                style={{ background: i === 0 ? "var(--ink)" : "transparent", color: "var(--paper)", border: `1px solid ${i === 0 ? "var(--ink)" : "var(--line-2)"}` }}
+              >
+                {i === 0 ? "✓" : ""}
+              </span>
+              <span style={{ textDecoration: i === 0 ? "line-through" : "none", color: i === 0 ? "var(--ink-3)" : "var(--ink)" }}>{t}</span>
+            </div>
+          ))}
+        </Mock>
+        <Mock>
+          <p className={label} style={{ color: "var(--ink-3)" }}>Budget</p>
+          <p className="m-dis mt-2 text-2xl">₹3,20,000 <span className="text-sm" style={{ color: "var(--ink-3)", fontFamily: "inherit" }}>of ₹8,00,000</span></p>
+          <span className="mt-3 block h-[6px] overflow-hidden rounded-full" style={{ background: "var(--paper-2)" }}>
+            <span className="block h-full rounded-full" style={{ width: "40%", background: "var(--ok)" }} />
+          </span>
+          <p className="mt-3 text-[13px]" style={{ color: "var(--ink-3)" }}>7 vendors · 2 payments due</p>
+        </Mock>
+      </div>
+    ),
+  },
+  {
     title: "One tap to WhatsApp",
-    text: "Mandapam writes the message for you and opens WhatsApp with it ready. Send twenty or two hundred, and the list keeps track of who has been sent and who has replied.",
+    text: "K-Invites writes the message for you and opens WhatsApp with it ready. Send twenty or two hundred, and the list keeps track of who has been sent and who has replied.",
     mock: (
       <Mock>
         <div className="ms-auto max-w-[300px] rounded-[12px] rounded-te-[2px] p-3.5 text-[14px] leading-[1.5]" style={{ background: "rgba(47,107,79,.14)" }}>
@@ -216,6 +247,7 @@ export const FEATURES: { title: string; text: string; mock: ReactNode; wide?: bo
 ];
 
 export const FAQ = [
+  { q: "Is this just an invitation site?", a: "It starts there, but your dashboard also has a checklist, a budget, vendors, a day-of timeline, accommodation and transport, and a place to invite family or a planner to help you run it. All of it is tied to the same guest list." },
   { q: "Do my guests need to install anything?", a: "No. The invitation opens in any browser, on any phone, and it is built to load on a weak connection." },
   { q: "Can I write it in my own language?", a: "Yes. Malayalam, Hindi, Tamil, Telugu, Kannada, Arabic, Urdu, Hebrew and more are built in, including right-to-left scripts, which are laid out properly rather than just flipped. Any other language works too: you write the wording yourself." },
   { q: "I am not good with computers.", a: "If you can send a WhatsApp message, you can do this. Three questions, then everything else is optional, and you can hand the editing to someone in the family." },

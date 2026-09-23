@@ -9,3 +9,9 @@ next-env.d.ts
 
 .vercel
 .env*
+
+.claude
+supabase/.temp
+
+.vercel
+.env*

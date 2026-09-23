@@ -20,7 +20,7 @@ const GROUPS: [string, string][] = [
 
 export default async function Templates({ searchParams }: { searchParams: Promise<{ type?: string; faith?: string; style?: string }> }) {
   const { type = "all", faith = "all", style = "all" } = await searchParams;
-  const app = process.env.NEXT_PUBLIC_APP_NAME || "Mandapam";
+  const app = process.env.NEXT_PUBLIC_APP_NAME || "K-Invites";
   const list = TEMPLATES.filter((t) => (type === "all" || t.group === type) && (faith === "all" || faithOf(t) === faith) && (style === "all" || styleOf(t) === style));
   const q = (t: string, f: string, st: string) => {
     const p = new URLSearchParams();

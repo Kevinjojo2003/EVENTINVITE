@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { InviteConfig } from "@/lib/types";
 import { BACKGROUNDS, FONT_PAIRS, displayTitle, fontsHref, sealText } from "@/lib/themes";
 import { language, fill } from "@/lib/i18n";
-import { calendarUrl, icsHref, dateParts as dateP, dayLabel, longDate, numericDate, shortDate, timeLabel, tzShort } from "@/lib/format";
+import { calendarUrl, formalDate, formalTime, icsHref, dateParts as dateP, dayLabel, longDate, numericDate, shortDate, timeLabel, tzShort } from "@/lib/format";
 import { createMusic, type MusicControl } from "./music";
 import { Fireflies } from "./Fireflies";
 import { Gate } from "./Gate";
@@ -138,11 +138,17 @@ export function Invitation({ config, slug, guest, preview }: Props) {
   };
 
   const website = c.theme.layout === "website";
-  const heroImage = c.heroPhoto || (c.theme.photo && c.theme.photo !== "none" ? PHOTOS[c.theme.photo].file : "");
+  const customPhotoFile = c.theme.photo === "custom" ? c.theme.photoUrl : "";
+  const heroImage = c.heroPhoto || customPhotoFile || (c.theme.photo && c.theme.photo !== "none" && c.theme.photo !== "custom" ? PHOTOS[c.theme.photo].file : "");
   const scene = c.theme.scene && c.theme.scene !== "none" ? c.theme.scene : null;
-  const photo = !website && !scene && c.theme.photo && c.theme.photo !== "none" ? c.theme.photo : null;
-  const wash = !scene && !photo && c.theme.watercolor && c.theme.watercolor !== "none" ? c.theme.watercolor : null;
-  const bgCss = scene || photo || wash ? "" : BACKGROUNDS[c.theme.background]?.css ?? "";
+  const photoOn = !website && !scene && c.theme.photo && c.theme.photo !== "none" && (c.theme.photo !== "custom" || !!c.theme.photoUrl);
+  const photoBackdrop = !photoOn
+    ? null
+    : c.theme.photo === "custom"
+      ? { file: c.theme.photoUrl, tint: `rgba(${c.theme.photoScrim === "dark" ? "10,8,6" : "255,252,245"}, ${c.theme.photoOpacity / 100})`, position: "center" }
+      : { file: PHOTOS[c.theme.photo as Exclude<typeof c.theme.photo, "none" | "custom">].file, tint: PHOTOS[c.theme.photo as Exclude<typeof c.theme.photo, "none" | "custom">].tint, position: PHOTOS[c.theme.photo as Exclude<typeof c.theme.photo, "none" | "custom">].position };
+  const wash = !scene && !photoOn && c.theme.watercolor && c.theme.watercolor !== "none" ? c.theme.watercolor : null;
+  const bgCss = scene || photoOn || wash ? "" : BACKGROUNDS[c.theme.background]?.css ?? "";
   const garden = c.theme.ornament === "garden";
   const wild = c.theme.ornament === "wildflower";
   const dateParts = dateP(c.event.dateTime, tz, loc);
@@ -174,7 +180,7 @@ export function Invitation({ config, slug, guest, preview }: Props) {
         </>
       )}
       {scene && <Scene kind={scene} />}
-      {photo && <PhotoBackdrop photo={photo} />}
+      {photoBackdrop && <PhotoBackdrop file={photoBackdrop.file} tint={photoBackdrop.tint} position={photoBackdrop.position} />}
       {wash && <Watercolor kind={wash} />}
       {garden && (
         <>
@@ -312,10 +318,20 @@ export function Invitation({ config, slug, guest, preview }: Props) {
               c.hosts.name1 || "Your name"
             )}
           </h1>
+          {c.hosts.nameTranslit.trim() && (
+            <p dir="ltr" className="rise dim text-[0.72rem] uppercase tracking-[0.28em]" style={{ marginTop: "-0.3rem" }}>
+              {c.hosts.nameTranslit}
+            </p>
+          )}
           {c.hosts.subline && <p className="rise rise-3 display text-[clamp(1.3rem,3vw,1.9rem)]">{c.hosts.subline}</p>}
           {c.event.headline && c.theme.titleStyle !== "stacked" && <p className="rise rise-3 dim max-w-md text-lg">{c.event.headline}</p>}
           <div className="rise rise-4 flex flex-col items-center gap-2">
-            {c.theme.dateStyle === "numeric" && c.event.dateTime ? (
+            {c.theme.dateStyle === "formal" && c.event.dateTime ? (
+              <div dir="ltr" className="grid max-w-md gap-1">
+                <p className="display text-[clamp(1.15rem,2.6vw,1.4rem)] leading-snug">{formalDate(c.event.dateTime, tz)}</p>
+                <p className="dim text-[clamp(0.95rem,2.2vw,1.1rem)] leading-snug">{formalTime(c.event.dateTime, tz)}</p>
+              </div>
+            ) : c.theme.dateStyle === "numeric" && c.event.dateTime ? (
               <p dir="ltr" className="display text-[clamp(1.6rem,4.4vw,2.6rem)] tracking-[0.08em]">{numericDate(c.event.dateTime, tz)}</p>
             ) : c.theme.dateStyle === "split" && dateParts ? (
               <div className="flex items-center gap-5" dir="ltr">
@@ -328,6 +344,11 @@ export function Invitation({ config, slug, guest, preview }: Props) {
               </div>
             ) : (
               dateLong && <p className="display text-[clamp(1.2rem,3vw,1.6rem)]">{dateLong}</p>
+            )}
+            {c.texts.dateTranslit.trim() && (
+              <p dir="ltr" className="dim text-[0.7rem] uppercase tracking-[0.22em]">
+                {c.texts.dateTranslit}
+              </p>
             )}
             {(c.venue.name || c.event.city) && (
               <p className="accent text-sm uppercase tracking-[0.22em]">{[c.venue.name, c.event.city].filter(Boolean).join(" · ")}</p>
@@ -399,6 +420,11 @@ export function Invitation({ config, slug, guest, preview }: Props) {
                       );
                     })()}
                     <h3 className="display text-[clamp(1.6rem,3vw,2.1rem)] leading-tight">{e.title}</h3>
+                    {e.titleSub && (
+                      <p dir="ltr" className="dim text-[0.68rem] uppercase tracking-[0.2em]">
+                        {e.titleSub}
+                      </p>
+                    )}
                     <p className="eyebrow">{dayLabel(e.start, tz, loc) || " "}</p>
                     {e.start && (
                       <p className="tnum text-sm">
@@ -701,6 +727,13 @@ export function Invitation({ config, slug, guest, preview }: Props) {
           </div>
         )}
 
+        {/* Tagline */}
+        {c.texts.tagline.trim() && (
+          <Section id="tagline" className="pb-24 text-center">
+            <p className="display text-[clamp(1.5rem,4vw,2.4rem)] italic">{c.texts.tagline}</p>
+          </Section>
+        )}
+
         {/* RSVP */}
         <Section id="rsvp" className="pb-28">
           <div className="grid gap-10 md:grid-cols-12">
@@ -770,6 +803,7 @@ export function Invitation({ config, slug, guest, preview }: Props) {
         {/* Footer */}
         <footer className="mx-auto w-full max-w-5xl px-5 pb-28 sm:px-8">
           <Divider kind={c.theme.ornament} />
+          {c.texts.signature.trim() && <p className="display mt-10 text-center text-lg italic">{c.texts.signature}</p>}
           {visibleCredits.length > 0 && (
             <div className={`mt-10 grid gap-8 text-center ${visibleCredits.length > 1 ? "sm:grid-cols-2 sm:text-start" : ""}`}>
               {visibleCredits.map((k, i) => (
@@ -782,6 +816,11 @@ export function Invitation({ config, slug, guest, preview }: Props) {
           )}
           {(c.music.credit || c.texts.footerNote) && (
             <p className="dim mt-14 text-center text-xs">{[c.music.credit, c.texts.footerNote].filter(Boolean).join(" · ")}</p>
+          )}
+          {!preview && (
+            <p className="dim mt-4 text-center text-[0.62rem] uppercase tracking-[0.2em] opacity-70">
+              Made with {process.env.NEXT_PUBLIC_APP_NAME || "K-Invites"}
+            </p>
           )}
         </footer>
       </main>

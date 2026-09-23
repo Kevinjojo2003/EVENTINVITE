@@ -1,27 +1,53 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { EVENT_TYPES, type EventType, type Invite } from "@/lib/types";
+import { EVENT_TYPES, type EventType, type Expense, type Guest, type Invite, type Rsvp, type Task } from "@/lib/types";
 import { displayTitle, normalizeConfig } from "@/lib/themes";
 import { inviteUrl, shortDate } from "@/lib/format";
+import { HomeHero } from "@/components/dashboard/HomeHero";
 
 export default async function DashboardHome() {
   const supabase = await createClient();
   const { data } = await supabase.from("invites").select("*").order("created_at", { ascending: false });
   const invites = (data ?? []) as Invite[];
 
+  // The "home screen" summarises one event: the most recent live one, or the most recent draft.
+  const primary = invites.find((i) => i.published) ?? invites[0];
+  let guests: Guest[] = [];
+  let rsvps: Rsvp[] = [];
+  let tasks: Task[] = [];
+  let expenses: Expense[] = [];
+  if (primary) {
+    const [g, r, t, e] = await Promise.all([
+      supabase.from("guests").select("*").eq("invite_id", primary.id),
+      supabase.from("rsvps").select("*").eq("invite_id", primary.id),
+      supabase.from("tasks").select("*").eq("invite_id", primary.id),
+      supabase.from("expenses").select("*").eq("invite_id", primary.id),
+    ]);
+    guests = (g.data ?? []) as Guest[];
+    rsvps = (r.data ?? []) as Rsvp[];
+    tasks = (t.data ?? []) as Task[];
+    expenses = (e.data ?? []) as Expense[];
+  }
+
+  const others = primary ? invites.filter((i) => i.id !== primary.id) : invites;
+
   return (
     <main className="mx-auto w-full max-w-7xl px-5 py-10 sm:px-8">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-medium">Your events</h1>
-          <p className="mt-1 text-sm" style={{ color: "var(--ink-2)" }}>
-            Each one gets its own address and guest list.
-          </p>
+      {primary ? (
+        <HomeHero invite={primary} guests={guests} rsvps={rsvps} tasks={tasks} expenses={expenses} />
+      ) : (
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-medium">Your events</h1>
+            <p className="mt-1 text-sm" style={{ color: "var(--ink-2)" }}>
+              Each one gets its own address and guest list.
+            </p>
+          </div>
+          <Link href="/dashboard/new" className="btn-primary">
+            New event
+          </Link>
         </div>
-        <Link href="/dashboard/new" className="btn-primary">
-          New event
-        </Link>
-      </div>
+      )}
 
       {invites.length === 0 ? (
         <div className="card mt-10 p-10 text-center">
@@ -33,9 +59,18 @@ export default async function DashboardHome() {
             Create an event
           </Link>
         </div>
-      ) : (
-        <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {invites.map((inv) => {
+      ) : others.length === 0 ? null : (
+        <>
+          <div className="mt-12 flex flex-wrap items-end justify-between gap-4">
+            <h2 className="text-lg font-medium" style={{ color: "var(--ink-2)" }}>
+              Your other events
+            </h2>
+            <Link href="/dashboard/new" className="btn-secondary">
+              New event
+            </Link>
+          </div>
+          <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {others.map((inv) => {
             const c = normalizeConfig(inv.config, inv.event_type as EventType);
             return (
               <li key={inv.id} className="card flex flex-col gap-3 p-5">
@@ -61,7 +96,7 @@ export default async function DashboardHome() {
                 </a>
                 <div className="mt-auto flex gap-2 pt-2">
                   <Link href={`/dashboard/${inv.id}`} className="btn-primary">
-                    Edit
+                    Open
                   </Link>
                   <Link href={`/dashboard/${inv.id}/guests`} className="btn-secondary">
                     Guests
@@ -73,7 +108,8 @@ export default async function DashboardHome() {
               </li>
             );
           })}
-        </ul>
+          </ul>
+        </>
       )}
     </main>
   );

@@ -1,4 +1,4 @@
-# Mandapam — invitation builder
+# K-Invites — invitation builder
 
 Hosts sign in, pick an event type (wedding, engagement, housewarming, birthday, corporate), choose a tradition and language, and get a live-preview editor. Each event is published at its own subdomain (`meera-arjun.yourdomain.com`). Guests get personal links, reply on the page or on WhatsApp, and corporate guests get QR tickets that are scanned at the door.
 

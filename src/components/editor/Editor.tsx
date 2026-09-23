@@ -264,6 +264,18 @@ export function Editor({ invite }: { invite: Invite }) {
       setBusy("");
     }
   }
+  async function onCustomBackground(files: FileList | null) {
+    if (!files?.[0]) return;
+    setBusy("bg-photo");
+    try {
+      const u = await uploadFile("photos", invite.id, files[0]);
+      patch((c) => ({ ...c, theme: { ...c.theme, photo: "custom", photoUrl: u } }));
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Upload failed");
+    } finally {
+      setBusy("");
+    }
+  }
   async function onMusic(files: FileList | null) {
     if (!files?.[0]) return;
     if (files[0].size > 20 * 1024 * 1024) return alert("Keep the track under 20 MB.");
@@ -365,6 +377,9 @@ export function Editor({ invite }: { invite: Invite }) {
                   </Field>
                 )}
               </div>
+              <Field label="Names, translated" hint="A romanized or translated version shown small under the names, for guests who don't read the script — e.g. AMINA & YUSUF under آمنة و يوسف">
+                <input value={config.hosts.nameTranslit} onChange={(e) => patch((c) => ({ ...c, hosts: { ...c.hosts, nameTranslit: e.target.value } }))} placeholder="Optional" />
+              </Field>
               <Field label="Subline" hint={config.event.type === "birthday" ? "e.g. turns thirty" : config.event.type === "corporate" ? "e.g. Annual Partner Summit 2026" : "Optional line under the names"}>
                 <input value={config.hosts.subline} onChange={(e) => patch((c) => ({ ...c, hosts: { ...c.hosts, subline: e.target.value } }))} />
               </Field>
@@ -387,6 +402,9 @@ export function Editor({ invite }: { invite: Invite }) {
                   </datalist>
                 </Field>
               </div>
+              <Field label="Date, translated" hint="A translation of the date shown small underneath, e.g. 'Saturday, 6 March 2027' under an Arabic date">
+                <input value={config.texts.dateTranslit} onChange={(e) => patch((c) => ({ ...c, texts: { ...c.texts, dateTranslit: e.target.value } }))} placeholder="Optional" />
+              </Field>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="City">
                   <input value={config.event.city} onChange={(e) => patch((c) => ({ ...c, event: { ...c.event, city: e.target.value } }))} />
@@ -484,6 +502,9 @@ export function Editor({ invite }: { invite: Invite }) {
                       <button type="button" className="btn-secondary" onClick={() => patch((c) => ({ ...c, schedule: c.schedule.filter((_, j) => j !== i) }))}>×</button>
                     </div>
                   </div>
+                  <Field label="Title, translated" hint="Shown small under the ceremony name, e.g. 'Anand Karaj' under ਅਨੰਦ ਕਾਰਜ">
+                    <input value={e.titleSub ?? ""} onChange={(ev) => setSchedule(i, "titleSub", ev.target.value)} placeholder="Optional" />
+                  </Field>
                   <div className="grid gap-3 sm:grid-cols-2">
                     <Field label="Starts">
                       <input type="datetime-local" value={toLocalInput(e.start)} onChange={(ev) => setSchedule(i, "start", fromLocalInput(ev.target.value, tz))} />
@@ -816,6 +837,20 @@ export function Editor({ invite }: { invite: Invite }) {
                     <span className="mb-1 flex h-12 items-center justify-center rounded" style={{ border: "1px dashed var(--line-2)" }}>—</span>
                     No photo
                   </button>
+                  <label
+                    className="cursor-pointer rounded border p-2 text-left text-xs"
+                    style={{ borderColor: config.theme.photo === "custom" ? "var(--brand)" : "var(--line)", borderWidth: config.theme.photo === "custom" ? 2 : 1 }}
+                  >
+                    {config.theme.photoUrl ? (
+                      <span className="mb-1 block h-12 rounded bg-cover bg-center" style={{ backgroundImage: `url(${config.theme.photoUrl})` }} />
+                    ) : (
+                      <span className="mb-1 flex h-12 items-center justify-center rounded" style={{ border: "1px dashed var(--line-2)" }}>
+                        {busy === "bg-photo" ? "Uploading…" : "+"}
+                      </span>
+                    )}
+                    Your own photo
+                    <input type="file" accept="image/*" className="sr-only" onChange={(e) => onCustomBackground(e.target.files)} />
+                  </label>
                   {PHOTO_LIST.map((p) => (
                     <button
                       key={p.key}
@@ -832,6 +867,40 @@ export function Editor({ invite }: { invite: Invite }) {
                     </button>
                   ))}
                 </div>
+                {config.theme.photo === "custom" && config.theme.photoUrl && (
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    <div className="field">
+                      <label htmlFor="photo-opacity">Overlay strength ({config.theme.photoOpacity}%)</label>
+                      <input
+                        id="photo-opacity"
+                        type="range"
+                        min={0}
+                        max={90}
+                        value={config.theme.photoOpacity}
+                        onChange={(e) => patch((c) => ({ ...c, theme: { ...c.theme, photoOpacity: Number(e.target.value) } }))}
+                      />
+                      <span className="text-xs" style={{ color: "var(--ink-3)" }}>
+                        Higher fades the photo more, so the writing stays easy to read.
+                      </span>
+                    </div>
+                    <fieldset className="field">
+                      <legend>Overlay colour</legend>
+                      <div className="flex gap-2">
+                        {(["dark", "light"] as const).map((s) => (
+                          <button
+                            key={s}
+                            type="button"
+                            className="rounded border px-3 py-1.5 text-xs capitalize"
+                            style={{ borderColor: config.theme.photoScrim === s ? "var(--brand)" : "var(--line)", borderWidth: config.theme.photoScrim === s ? 2 : 1 }}
+                            onClick={() => patch((c) => ({ ...c, theme: { ...c.theme, photoScrim: s } }))}
+                          >
+                            {s === "dark" ? "Dark (light text)" : "Light (dark text)"}
+                          </button>
+                        ))}
+                      </div>
+                    </fieldset>
+                  </div>
+                )}
               </Field>
               <Field label="Page background" hint="A soft painted gradient with paper grain behind the whole page. Your colours still set the text.">
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
@@ -873,6 +942,7 @@ export function Editor({ invite }: { invite: Invite }) {
                   <option value="stacked">One line: Saturday, 6 March 2027</option>
                   <option value="split">Split: 17 | Saturday / February 2027</option>
                   <option value="numeric">Numbers: 26 - 08 - 2027</option>
+                  <option value="formal">Engraved card: Saturday, the twenty-fourth of April, two thousand and twenty-seven</option>
                 </select>
               </Field>
               <Field label="Ornament" hint="A drawn motif above the names, matching dividers, and flourishes on the frame corners.">
@@ -1230,6 +1300,14 @@ export function Editor({ invite }: { invite: Invite }) {
               <button type="button" className="btn-secondary w-fit" onClick={() => patch((c) => ({ ...c, extras: { ...c.extras, party: [...c.extras.party, { name: "", role: "", note: "", photo: "" }] } }))}>
                 Add a person
               </button>
+
+              <p className="mt-2 text-sm font-medium">Closing lines</p>
+              <Field label="Tagline" hint="A short line shown after the photos, before RSVP, e.g. 'Together, always.'">
+                <input value={config.texts.tagline} onChange={(e) => patch((c) => ({ ...c, texts: { ...c.texts, tagline: e.target.value } }))} placeholder="Optional" />
+              </Field>
+              <Field label="Signature" hint="Shown near the very end, e.g. 'With love, Anna & Joseph'">
+                <input value={config.texts.signature} onChange={(e) => patch((c) => ({ ...c, texts: { ...c.texts, signature: e.target.value } }))} placeholder="Optional" />
+              </Field>
 
               <Field label="Hashtag" hint="Shown under the date">
                 <input value={config.extras.hashtag} onChange={(e) => patch((c) => ({ ...c, extras: { ...c.extras, hashtag: e.target.value } }))} placeholder="#MeeraWedsArjun" />

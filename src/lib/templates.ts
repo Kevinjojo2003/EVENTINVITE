@@ -27,7 +27,7 @@ export type Template = {
   bigAmpersand?: boolean;
   scene?: "none" | "moonlight" | "sunrise-journey" | "golden-hour" | "garden-day" | "ocean-dusk";
   background?: "flat" | "mist" | "blush" | "dusk" | "sage";
-  dateStyle?: "stacked" | "split" | "numeric";
+  dateStyle?: "stacked" | "split" | "numeric" | "formal";
   ornament: "none" | "floral" | "mandala" | "leaves" | "rings" | "paisley" | "garland" | "lanterns" | "arch" | "garden" | "wildflower";
   sample: {
     name1: string;
@@ -40,6 +40,12 @@ export type Template = {
     story: string;
     date: string; // yyyy-mm-dd
     tickets?: boolean;
+    nameTranslit?: string; // a romanized/translated version of the names, shown small under the big display names
+    dateTranslit?: string; // a translated date line, shown small under the localized date
+    tagline?: string; // a short closing line after the photos, before RSVP
+    signature?: string; // "With love, Anna & Joseph"
+    scheduleTitles?: string[]; // overrides each ceremony's title with the native script, matched by index
+    scheduleSubs?: string[]; // a translated title per ceremony, shown small underneath, matched by index
   };
 };
 
@@ -58,7 +64,19 @@ export const TEMPLATES: Template[] = [
     crest: "",
     frame: true,
     ornament: "garland",
-    sample: { name1: "ലക്ഷ്മി", name2: "അരുൺ", city: "Kochi", venue: "Bolgatty Palace", address: "Mulavukad, Kochi", story: "We met at a friend's wedding and have been talking ever since.", date: "2027-01-14" },
+    sample: {
+      name1: "ലക്ഷ്മി",
+      name2: "അരുൺ",
+      nameTranslit: "Lakshmi & Arun",
+      dateTranslit: "Thursday, 14 January 2027",
+      city: "Kochi",
+      venue: "Bolgatty Palace",
+      address: "Mulavukad, Kochi",
+      story: "We met at a friend's wedding and have been talking ever since.",
+      date: "2027-01-14",
+      tagline: "Together, always.",
+      signature: "With love, Lakshmi & Arun",
+    },
   },
   {
     key: "garden-mandap",
@@ -109,7 +127,21 @@ export const TEMPLATES: Template[] = [
     crest: "بسم الله",
     frame: true,
     ornament: "arch",
-    sample: { name1: "آمنة", name2: "يوسف", city: "Dubai", venue: "Al Habtoor Palace", address: "Business Bay, Dubai", story: "بارك الله لكما وبارك عليكما وجمع بينكما في خير.", date: "2027-03-06" },
+    sample: {
+      name1: "آمنة",
+      name2: "يوسف",
+      nameTranslit: "Amina & Yusuf",
+      dateTranslit: "Saturday, 6 March 2027 · 6:00 pm",
+      city: "Dubai",
+      venue: "Al Habtoor Palace",
+      address: "Business Bay, Dubai",
+      story: "بارك الله لكما وبارك عليكما وجمع بينكما في خير.",
+      date: "2027-03-06",
+      tagline: "معاً، دائماً.",
+      signature: "بكل الحب، آمنة ويوسف",
+      scheduleTitles: ["مهندي", "نكاح", "وليمة"],
+      scheduleSubs: ["Mehndi", "Nikah", "Walima"],
+    },
   },
   {
     key: "church",
@@ -125,7 +157,17 @@ export const TEMPLATES: Template[] = [
     crest: "✝",
     frame: true,
     ornament: "leaves",
-    sample: { name1: "Anna", name2: "Joseph", city: "Kottayam", venue: "St. Mary's Church", address: "Kanjikuzhy, Kottayam", story: "Two families, one long friendship, and a wedding we are thrilled to share with you.", date: "2027-02-20" },
+    sample: {
+      name1: "Anna",
+      name2: "Joseph",
+      city: "Kottayam",
+      venue: "St. Mary's Church",
+      address: "Kanjikuzhy, Kottayam",
+      story: "Two families, one long friendship, and a wedding we are thrilled to share with you.",
+      date: "2027-02-20",
+      tagline: "Together, always.",
+      signature: "With love, Anna & Joseph",
+    },
   },
   {
     key: "anand-karaj",
@@ -141,7 +183,21 @@ export const TEMPLATES: Template[] = [
     crest: "ੴ",
     frame: true,
     ornament: "paisley",
-    sample: { name1: "ਸਿਮਰਨ", name2: "ਹਰਜੀਤ", city: "Amritsar", venue: "Gurdwara Sahib", address: "Model Town, Amritsar", story: "With the blessings of Waheguru and our families, we begin our life together.", date: "2026-12-12" },
+    sample: {
+      name1: "ਸਿਮਰਨ",
+      name2: "ਹਰਜੀਤ",
+      nameTranslit: "Simran & Harjit",
+      dateTranslit: "Saturday, 12 December 2026 · 9:00 am",
+      city: "Amritsar",
+      venue: "Gurdwara Sahib",
+      address: "Model Town, Amritsar",
+      story: "With the blessings of Waheguru and our families, we begin our life together.",
+      date: "2026-12-12",
+      tagline: "ਇਕੱਠੇ, ਹਮੇਸ਼ਾ।",
+      signature: "ਪਿਆਰ ਸਹਿਤ, ਸਿਮਰਨ ਤੇ ਹਰਜੀਤ",
+      scheduleTitles: ["ਕੁੜਮਾਈ", "ਮਹਿੰਦੀ ਤੇ ਸੰਗੀਤ", "ਅਨੰਦ ਕਾਰਜ", "ਰਿਸੈਪਸ਼ਨ"],
+      scheduleSubs: ["Kurmai", "Mehndi & Sangeet", "Anand Karaj", "Reception"],
+    },
   },
   {
     key: "tamil-wedding",
@@ -205,7 +261,21 @@ export const TEMPLATES: Template[] = [
     crest: "गृह प्रवेश",
     frame: true,
     ornament: "lanterns",
-    sample: { name1: "प्रिया और रोहन", name2: "", city: "Pune", venue: "Our new home", address: "Baner, Pune", story: "हमारे नए घर में आपका स्वागत है।", date: "2027-01-03" },
+    sample: {
+      name1: "प्रिया और रोहन",
+      name2: "",
+      nameTranslit: "Priya & Rohan",
+      dateTranslit: "Sunday, 3 January 2027 · 10:00 am",
+      city: "Pune",
+      venue: "Our new home",
+      address: "Baner, Pune",
+      story: "हमारे नए घर में आपका स्वागत है।",
+      date: "2027-01-03",
+      tagline: "हमारा पहला घर।",
+      signature: "सप्रेम, प्रिया और रोहन",
+      scheduleTitles: ["गृह प्रवेशम्", "भोजन"],
+      scheduleSubs: ["Griha Pravesham", "Lunch"],
+    },
   },
   {
     key: "birthday",
@@ -221,7 +291,18 @@ export const TEMPLATES: Template[] = [
     crest: "✦",
     frame: false,
     ornament: "lanterns",
-    sample: { name1: "Kiaan", name2: "", subline: "turns one", city: "Kochi", venue: "The Garden Room", address: "Panampilly Nagar, Kochi", story: "Cake, balloons and a lot of clapping. Come and be part of it.", date: "2026-11-08" },
+    sample: {
+      name1: "Kiaan",
+      name2: "",
+      subline: "turns one",
+      city: "Kochi",
+      venue: "The Garden Room",
+      address: "Panampilly Nagar, Kochi",
+      story: "Cake, balloons and a lot of clapping. Come and be part of it.",
+      date: "2026-11-08",
+      tagline: "One whole year of him.",
+      signature: "Love, Meera & Thomas",
+    },
   },
   {
     key: "partners-dinner",
@@ -1370,6 +1451,94 @@ export const TEMPLATES: Template[] = [
     ornament: "none",
     sample: { name1: "Zubin", name2: "Dinaz", city: "Pune", venue: "Parsi Club Lawn", address: "Camp, Pune", story: "Two families, one long friendship.", date: "2027-03-06" },
   },
+  {
+    key: "garden-formal",
+    name: "Engraved garden",
+    blurb: "The wording of a printed wedding card: 'request the pleasure of your company', with the date and time spelled out in full.",
+    caption: "Church wedding · English",
+    group: "wedding",
+    type: "wedding",
+    tradition: "christian",
+    language: "en",
+    timezone: "Asia/Kolkata",
+    preset: "sage",
+    crest: "",
+    frame: false,
+    dateStyle: "formal",
+    ornament: "leaves",
+    sample: {
+      name1: "Clara",
+      name2: "Samuel",
+      eyebrow: "Together with their families",
+      city: "Fort Kochi",
+      venue: "St Francis Church",
+      address: "Fort Kochi, Kerala",
+      story: "We would love for you to be there as we begin this new chapter, surrounded by the people who mean the most to us.",
+      date: "2027-04-24",
+      tagline: "Together, always.",
+      signature: "With love, Clara & Samuel",
+    },
+  },
+  {
+    key: "kayal",
+    name: "Kayal",
+    blurb: "Teal and brass, named for the Kerala backwaters. For a Syrian Christian wedding, in Malayalam.",
+    caption: "Syrian Christian wedding · Malayalam",
+    group: "wedding",
+    type: "wedding",
+    tradition: "syrian-christian",
+    language: "ml",
+    timezone: "Asia/Kolkata",
+    preset: "lagoon",
+    crest: "ദൈവകൃപയാൽ",
+    frame: true,
+    ornament: "leaves",
+    sample: {
+      name1: "ആൻ മരിയ",
+      name2: "ജോർജ്",
+      nameTranslit: "Ann Maria & George",
+      dateTranslit: "Monday, 3 May 2027 · 11:00 am",
+      city: "Kumarakom",
+      venue: "St. Mary's Forona Church",
+      address: "Kumarakom, Kottayam",
+      story: "By the grace of God, and with the blessings of our families, we invite you to our wedding among the backwaters we grew up beside.",
+      date: "2027-05-03",
+      tagline: "Together, always.",
+      signature: "With love, Ann Maria & George",
+      scheduleTitles: ["മന്ത്രകോടി അനുഗ്രഹം", "വിശുദ്ധ വിവാഹം", "സ്വീകരണം"],
+      scheduleSubs: ["Manthrakodi blessing", "Holy Matrimony", "Reception"],
+    },
+  },
+  {
+    key: "palli",
+    name: "Palli",
+    blurb: "Emerald and gold under an arch, named for the mosque. A Mappila (Kerala Muslim) nikah, in Malayalam.",
+    caption: "Mappila nikah · Malayalam",
+    group: "wedding",
+    type: "wedding",
+    tradition: "muslim",
+    language: "ml",
+    timezone: "Asia/Kolkata",
+    preset: "emerald",
+    crest: "ബിസ്മില്ലാഹിർ റഹ്മാനിർ റഹീം",
+    frame: true,
+    ornament: "arch",
+    sample: {
+      name1: "ഫാത്തിമ നസ്രിൻ",
+      name2: "മുഹമ്മദ് ഷാഫി",
+      nameTranslit: "Fathima Nasrin & Muhammed Shafi",
+      dateTranslit: "Sunday, 27 December 2026 · 12:00 pm",
+      city: "Kozhikode",
+      venue: "Community Hall",
+      address: "Kozhikode, Kerala",
+      story: "അല്ലാഹുവിന്റെ അനുഗ്രഹത്തോടെ, ഞങ്ങളുടെ നിക്കാഹിൽ പങ്കുചേരാൻ സ്നേഹപൂർവ്വം ക്ഷണിക്കുന്നു.",
+      date: "2026-12-27",
+      tagline: "എന്നെന്നും ഒരുമിച്ച്.",
+      signature: "സ്നേഹത്തോടെ, ഫാത്തിമ നസ്രിനും മുഹമ്മദ് ഷാഫിയും",
+      scheduleTitles: ["മെഹന്തി", "നിക്കാഹ്", "വലീമ"],
+      scheduleSubs: ["Mehndi", "Nikah", "Walima"],
+    },
+  },
 ];
 
 export const templateByKey = (key: string) => TEMPLATES.find((t) => t.key === key);
@@ -1397,7 +1566,7 @@ function slots(count: number, date: string, tz: string): { start: string; end: s
 // and for a real invitation the host starts from this template.
 function applyDesign(t: Template, cfg: InviteConfig): InviteConfig {
   const p = PRESETS[t.preset];
-  cfg.theme = { preset: t.preset, colors: { ...p.colors }, fonts: p.fonts, fireflies: p.fireflies, frame: t.frame, ornament: t.ornament, background: t.background ?? "flat", dateStyle: t.dateStyle ?? "stacked", titleStyle: t.titleStyle ?? "default", scene: t.scene ?? "none", photo: t.photo ?? "none", watercolor: t.watercolor ?? "none", bigAmpersand: t.bigAmpersand ?? false, layout: t.layout ?? "invitation" };
+  cfg.theme = { preset: t.preset, colors: { ...p.colors }, fonts: p.fonts, fireflies: p.fireflies, frame: t.frame, ornament: t.ornament, background: t.background ?? "flat", dateStyle: t.dateStyle ?? "stacked", titleStyle: t.titleStyle ?? "default", scene: t.scene ?? "none", photo: t.photo ?? "none", photoUrl: "", photoOpacity: 55, photoScrim: "dark", watercolor: t.watercolor ?? "none", bigAmpersand: t.bigAmpersand ?? false, layout: t.layout ?? "invitation" };
   cfg.texts.crest = t.crest;
   return cfg;
 }
@@ -1416,10 +1585,14 @@ export function sampleFromTemplate(t: Template): InviteConfig {
   const s = t.sample;
   const cfg = starterFromTemplate(t, s.name1, s.name2);
   cfg.hosts.subline = s.subline ?? "";
+  cfg.hosts.nameTranslit = s.nameTranslit ?? "";
+  cfg.texts.dateTranslit = s.dateTranslit ?? "";
+  cfg.texts.tagline = s.tagline ?? "";
+  cfg.texts.signature = s.signature ?? "";
   if (s.eyebrow) cfg.texts.eyebrow = s.eyebrow;
   cfg.event.city = s.city;
   const times = slots(cfg.schedule.length, s.date, t.timezone);
-  cfg.schedule = cfg.schedule.map((e, i) => ({ ...e, ...times[i], place: e.place || s.venue }));
+  cfg.schedule = cfg.schedule.map((e, i) => ({ ...e, ...times[i], title: s.scheduleTitles?.[i] ?? e.title, place: e.place || s.venue, titleSub: s.scheduleSubs?.[i] }));
   const main = cfg.schedule[Math.min(1, cfg.schedule.length - 1)];
   cfg.event.dateTime = main?.start ?? "";
   cfg.venue = { ...cfg.venue, name: s.venue, line1: s.address, line2: s.city, mapsUrl: `https://maps.google.com/?q=${encodeURIComponent(`${s.venue} ${s.city}`)}` };
@@ -1447,6 +1620,10 @@ export function sampleFromTemplate(t: Template): InviteConfig {
   if (t.key === "church") {
     cfg.texts.verse = "Love is patient, love is kind. It always protects, always trusts, always hopes, always perseveres. Love never fails.";
     cfg.texts.verseSource = "1 Corinthians 13:4-8";
+  }
+  if (t.key === "garden-formal") {
+    // The wording of a printed engraved invitation, in place of the usual casual headline.
+    cfg.event.headline = "request the pleasure of your company at the celebration of their marriage";
   }
   if (t.type === "wedding" || t.type === "engagement") {
     cfg.extras.chapters = [

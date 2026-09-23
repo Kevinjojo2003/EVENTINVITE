@@ -169,7 +169,7 @@ export function icsHref(title: string, start: string, end: string, location: str
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Mandapam//Invitation//EN",
+    "PRODID:-//K-Invites//Invitation//EN",
     "BEGIN:VEVENT",
     `UID:${stamp(start)}-${Math.abs(hash(title))}@mandapam`,
     // DTSTAMP is required but must not depend on "now", or the server and browser render different links.
@@ -188,4 +188,74 @@ function hash(s: string) {
   let h = 0;
   for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
   return h;
+}
+
+// The spelled-out wording of an engraved wedding card: "Saturday, the twenty-fourth of April,
+// two thousand and twenty-seven" and "at half past three in the afternoon". English only — it is
+// a register (formal, printed-card English), not a translation, so it does not vary by language.
+const ORDINALS = [
+  "", "first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth",
+  "eleventh", "twelfth", "thirteenth", "fourteenth", "fifteenth", "sixteenth", "seventeenth", "eighteenth", "nineteenth", "twentieth",
+  "twenty-first", "twenty-second", "twenty-third", "twenty-fourth", "twenty-fifth", "twenty-sixth", "twenty-seventh", "twenty-eighth", "twenty-ninth", "thirtieth", "thirty-first",
+];
+const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const ONES = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
+const TEENS = ["ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"];
+const TENS = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"];
+
+function twoDigitsInWords(n: number): string {
+  if (n === 0) return "";
+  if (n < 10) return ONES[n];
+  if (n < 20) return TEENS[n - 10];
+  const t = Math.floor(n / 10);
+  const o = n % 10;
+  return TENS[t] + (o ? "-" + ONES[o] : "");
+}
+
+// "2027" -> "two thousand and twenty-seven"; "1999" -> "nineteen ninety-nine".
+function yearInWords(y: number): string {
+  if (y >= 2000 && y < 2100) {
+    const rest = y % 100;
+    return rest === 0 ? "two thousand" : `two thousand and ${twoDigitsInWords(rest)}`;
+  }
+  // Outside 2000-2099 (rare for a wedding date): "nineteen ninety-nine" style, century and remainder.
+  const century = Math.floor(y / 100);
+  const rest = y % 100;
+  const centuryWords = twoDigitsInWords(century);
+  if (rest === 0) return `${centuryWords} hundred`;
+  if (rest < 10) return `${centuryWords} oh-${ONES[rest]}`;
+  return `${centuryWords} ${twoDigitsInWords(rest)}`;
+}
+
+export function formalDate(iso: string, tz = "Asia/Kolkata"): string {
+  const d = valid(iso);
+  if (!d) return "";
+  const x = ymd(d, tz);
+  const weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][x.w];
+  return `${weekday}, the ${ORDINALS[x.d]} of ${MONTH_NAMES[x.m]}, ${yearInWords(x.y)}`;
+}
+
+// "at half past three in the afternoon", "at noon", "at a quarter to six in the evening".
+export function formalTime(iso: string, tz = "Asia/Kolkata"): string {
+  const d = valid(iso);
+  if (!d) return "";
+  const p = new Intl.DateTimeFormat("en-US", { timeZone: tz, hour: "numeric", minute: "numeric", hour12: false }).formatToParts(d);
+  const h24 = Number(p.find((x) => x.type === "hour")?.value ?? "0");
+  const m = Number(p.find((x) => x.type === "minute")?.value ?? "0");
+  if (h24 === 0 && m === 0) return "at midnight";
+  if (h24 === 12 && m === 0) return "at noon";
+  const HOUR_WORDS = ["twelve", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"];
+  const h12 = ((h24 + 11) % 12) + 1;
+  const next12 = (h12 % 12) + 1;
+  const hourWord = HOUR_WORDS[h12];
+  const nextWord = HOUR_WORDS[next12];
+  const partOfDay = h24 < 12 ? "in the morning" : h24 < 17 ? "in the afternoon" : h24 < 21 ? "in the evening" : "at night";
+  let clock: string;
+  if (m === 0) clock = `${hourWord} o'clock`;
+  else if (m === 15) clock = `a quarter past ${hourWord}`;
+  else if (m === 30) clock = `half past ${hourWord}`;
+  else if (m === 45) clock = `a quarter to ${nextWord}`;
+  else if (m < 30) clock = `${twoDigitsInWords(m)} minutes past ${hourWord}`;
+  else clock = `${twoDigitsInWords(60 - m)} minutes to ${nextWord}`;
+  return `at ${clock} ${partOfDay}`;
 }

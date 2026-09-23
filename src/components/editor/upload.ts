@@ -38,6 +38,25 @@ export async function uploadFile(bucket: "photos" | "music", inviteId: string, o
   return supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
 }
 
+// Documents live in a private bucket at {invite_id}/..., readable by anyone who can manage
+// that event (owner or accepted team member), not just the uploader. Returns the storage path;
+// callers need a signed URL (see signedDocumentUrl) to actually view or download it.
+export async function uploadDocument(inviteId: string, file: File): Promise<{ path: string; name: string }> {
+  const supabase = createClient();
+  const ext = (file.name.split(".").pop() || "bin").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const path = `${inviteId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  const { error } = await supabase.storage.from("documents").upload(path, file, { contentType: file.type || undefined, upsert: false });
+  if (error) throw new Error(error.message);
+  return { path, name: file.name };
+}
+
+export async function signedDocumentUrl(path: string): Promise<string> {
+  const supabase = createClient();
+  const { data, error } = await supabase.storage.from("documents").createSignedUrl(path, 300);
+  if (error || !data) throw new Error(error?.message || "Could not open that file.");
+  return data.signedUrl;
+}
+
 export type LibraryTrack = { name: string; url: string };
 
 // Royalty-free tracks you upload to music/library/ in the Supabase dashboard.
