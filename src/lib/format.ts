@@ -158,7 +158,11 @@ export function slugify(s: string) {
 export function inviteUrl(slug: string) {
   const root = process.env.NEXT_PUBLIC_ROOT_DOMAIN || "localhost:3000";
   const proto = root.startsWith("localhost") ? "http" : "https";
-  return `${proto}://${slug}.${root}`;
+  // Vercel's shared *.vercel.app domain never routes wildcard subdomains for a project — only a
+  // real custom domain with its own wildcard DNS record can. Fall back to the path form there,
+  // which always works; *.localhost resolves natively in the browser, so dev keeps subdomains.
+  const supportsSubdomains = root.startsWith("localhost") || !root.endsWith(".vercel.app");
+  return supportsSubdomains ? `${proto}://${slug}.${root}` : `${proto}://${root}/s/${slug}`;
 }
 
 // A downloadable .ics file so the event also lands in Apple Calendar and Outlook.
